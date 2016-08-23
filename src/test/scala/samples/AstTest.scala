@@ -24,7 +24,7 @@ class AstTest extends FunSpec{
             val exps = MethodCallExprNode(
                 CalloutArgsMethodCallNode(
                     MethodNameNode(VarNode("shit")),
-                    List(ExprArgNode(IntLiteralNode(1)), StringArgNode(StringLiteralNode("hehe"))))
+                    List(ExprArgNode(IntLiteralNode("11111")), StringArgNode(StringLiteralNode("hehe"))))
             )
 
             println(exps.treeString)

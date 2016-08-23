@@ -2,6 +2,7 @@ package org.bohao.decaf.compile
 
 import java.io._
 
+import org.antlr.v4.runtime._
 import org.bohao.decaf.parser.ParserLexer
 import org.bohao.decaf.util.CLI
 
@@ -38,25 +39,24 @@ object Compiler {
 
     def scan(fileName: String) {
         try {
-//            val inputStream: FileInputStream = new java.io.FileInputStream(fileName)
-//            val scanner = new DecafScanner(new DataInputStream(inputStream))
-//            var done = false
-//            while (!done) {
-//                try {
-//                    val head = scanner.nextToken()
-//                    if (head.getType() == DecafScannerTokenTypes.EOF) {
-//                        done = true
-//                    } else {
-//                        val tokenType = tokenMap.getOrElse(head.getType(), "")
-//                        outFile.println(head.getLine() + (if (tokenType == "") "" else " ") + tokenType + " " + head.getText())
-//                    }
-//                } catch {
-//                    case ex: Exception => {
-//                        Console.err.println(CLI.infile + " " + ex)
-//                        scanner.consume();
-//                    }
-//                }
-//            }
+            val inputStream: FileInputStream = new java.io.FileInputStream(fileName)
+            val lexer = new ParserLexer(new ANTLRInputStream(inputStream))
+            var done = false
+            while (!done) {
+                try {
+                    val head = lexer.nextToken()
+                    if (head.getType == Token.EOF) {
+                        done = true
+                    } else {
+                        val tokenType = tokenMap.getOrElse(head.getType, "")
+                        outFile.println(head.getLine + (if (tokenType == "") "" else " ") + tokenType + " " + head.getText)
+                    }
+                } catch {
+                    case ex: Exception =>
+                        Console.out.println(CLI.infile + " " + ex)
+                        //                        lexer.emit()
+                }
+            }
         } catch {
             case ex: Exception => Console.err.println(ex)
         }

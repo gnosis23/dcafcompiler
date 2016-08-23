@@ -74,11 +74,19 @@
             <plugin>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
-                <version>4.3</version>
+                <version>4.5.3</version>
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<id>antlr</id>-->
+                        <!--<goals>-->
+                            <!--<goal>antlr4</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                <!--</executions>-->
 
                 <configuration>
-                    <sourceDirectory>src/main/java/org/bohao/decaf/parser</sourceDirectory>
-                    <outputDirectory>src/main/java/org/bohao/decaf/parser</outputDirectory>
+                    <sourceDirectory>src/main/java/org/bohao/decaf/parser/</sourceDirectory>
+                    <outputDirectory>src/main/java/org/bohao/decaf/parser/</outputDirectory>
                     <arguments>
                         <argument>-no-listener</argument>
                     </arguments>

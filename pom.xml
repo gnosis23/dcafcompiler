@@ -30,6 +30,12 @@
             <version>${scala.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.nikita-volkov</groupId>
+            <artifactId>sext</artifactId>
+            <version>0.2.3</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.antlr/antlr4-runtime -->
         <dependency>
             <groupId>org.antlr</groupId>

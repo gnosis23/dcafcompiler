@@ -1,1 +1,7 @@
-printf("Hello, world"); '牛'
+#include
+int main(int nargs) {
+    int i = 1; // comment3
+    boolean @b = true;
+    int c = 'c'; // comment2
+    printf("Hello, world", '牛');
+}

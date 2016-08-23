@@ -98,6 +98,8 @@ literal
 
 CHARLITERAL: '\'' CHAR '\'';
 
+BADCHAR: '\'' . '\'';
+
 INTLITERAL
     : DECIMAL_LITERAL
     | HEX_LITERAL
@@ -106,6 +108,10 @@ INTLITERAL
 BOOLEANLITERAL: 'true' | 'false';
 
 STRINGLITERAL: '"' CHAR* '"';
+
+UNTERMINATED_STRING
+      : '"' XCHAR*
+      ;
 
 IDENTIFIER: ALPHA ALPHA_NUM* ;
 
@@ -125,6 +131,15 @@ CHAR
     ;
 
 fragment
+XCHAR
+    : '\\' ('\'' | '\"' | '\\' | 't' | 'r')
+    | '\u0020'..'\u0021'
+    | '\u0023'..'\u0026'
+    | '\u0028'..'\u005b'
+    | '\u005d'..'\u007e'
+    ;
+
+fragment
 DIGIT: [0-9];
 
 fragment
@@ -137,4 +152,11 @@ fragment
 HEX_LITERAL: '0x' HEX_DIGIT HEX_DIGIT*;
 
 
-WS  :   [ \t\r\n]+ -> skip;
+WS  :   [ \t\r\n]+ -> skip
+    ;
+
+LINE_COMMENT
+    : '//' ~[\r\n]* '\r'? '\n' -> skip
+    ;
+
+ErrorChar : . ;

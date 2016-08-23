@@ -45,11 +45,30 @@ object Compiler {
             while (!done) {
                 try {
                     val head = lexer.nextToken()
-                    if (head.getType == Token.EOF) {
-                        done = true
-                    } else {
-                        val tokenType = tokenMap.getOrElse(head.getType, "")
-                        outFile.println(head.getLine + (if (tokenType == "") "" else " ") + tokenType + " " + head.getText)
+                    head.getType match {
+                        case Token.EOF => done = true
+                        case ParserLexer.ErrorChar =>
+                            Console.err.println("%d:%d unrecognized %s".format(
+                                head.getLine,
+                                head.getCharPositionInLine,
+                                head.getText))
+                        case ParserLexer.UNTERMINATED_STRING =>
+                            Console.err.println("%d:%d missing quotations: %s".format(
+                                head.getLine,
+                                head.getCharPositionInLine,
+                                head.getText))
+                        case ParserLexer.BADCHAR =>
+                            Console.err.println("%d:%d invalid char: %s".format(
+                                head.getLine,
+                                head.getCharPositionInLine,
+                                head.getText))
+                        case _ =>
+                            val tokenType = tokenMap.getOrElse(head.getType, "")
+                            outFile.println("%d%s%s %s".format(
+                                head.getLine,
+                                if (tokenType == "") "" else " ",
+                                tokenType,
+                                head.getText))
                     }
                 } catch {
                     case ex: Exception =>
@@ -62,36 +81,41 @@ object Compiler {
         }
     }
 
-//    def parse(fileName: String): CommonAST = {
-//        /**
-//          * Parse the file specified by the filename. Eventually, this method
-//          * may return a type specific to your compiler.
-//          */
-//        var inputStream: java.io.FileInputStream = null
-//        try {
-//            inputStream = new java.io.FileInputStream(fileName)
-//        } catch {
-//            case f: FileNotFoundException => {
-//                Console.err.println("File " + fileName + " does not exist"); return null
-//            }
-//        }
-//        try {
-//            val scanner = new DecafScanner(new DataInputStream(inputStream))
-//            val parser = new DecafParser(scanner);
-//
-//            parser.setTrace(CLI.debug)
-//            parser.program()
-//            val t = parser.getAST().asInstanceOf[CommonAST]
-//            if (parser.getError()) {
-//                print("[ERROR] Parse failed\n")
-//                return null
-//            } else if (CLI.debug) {
-//                print(t.toStringList())
-//            }
-//            t
-//        } catch {
-//            case e: Exception => Console.err.println(CLI.infile + " " + e)
-//                null
-//        }
-//    }
+    private def unwrap(str: String): String = {
+        if (str.length < 2) ""
+        else str.substring(1, str.length)
+    }
+
+    //    def parse(fileName: String): CommonAST = {
+    //        /**
+    //          * Parse the file specified by the filename. Eventually, this method
+    //          * may return a type specific to your compiler.
+    //          */
+    //        var inputStream: java.io.FileInputStream = null
+    //        try {
+    //            inputStream = new java.io.FileInputStream(fileName)
+    //        } catch {
+    //            case f: FileNotFoundException => {
+    //                Console.err.println("File " + fileName + " does not exist"); return null
+    //            }
+    //        }
+    //        try {
+    //            val scanner = new DecafScanner(new DataInputStream(inputStream))
+    //            val parser = new DecafParser(scanner);
+    //
+    //            parser.setTrace(CLI.debug)
+    //            parser.program()
+    //            val t = parser.getAST().asInstanceOf[CommonAST]
+    //            if (parser.getError()) {
+    //                print("[ERROR] Parse failed\n")
+    //                return null
+    //            } else if (CLI.debug) {
+    //                print(t.toStringList())
+    //            }
+    //            t
+    //        } catch {
+    //            case e: Exception => Console.err.println(CLI.infile + " " + e)
+    //                null
+    //        }
+    //    }
 }

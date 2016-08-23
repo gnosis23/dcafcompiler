@@ -30,8 +30,7 @@ import scala.collection.mutable
 import scala.collection.mutable.Stack
 import org.scalatest.Assertions
 import org.junit.Test
-
-
+import org.bohao.decaf.compile._
 
 /*
 Here's an example of a FunSuite with ShouldMatchers mixed in:
@@ -46,26 +45,42 @@ A Map
 - should only contain keys and values that were added to it
 - should report its size as the number of key/value pairs it contains
 */
+
 import org.scalatest.FunSpec
+
 import scala.collection.mutable.Stack
 
 class ExampleSpec extends FunSpec {
 
-  describe("A Stack") {
+    describe("A Stack") {
 
-    it("should pop values in last-in-first-out order") {
-      val stack = new mutable.Stack[Int]
-      stack.push(1)
-      stack.push(2)
-      assert(stack.pop() === 2)
-      assert(stack.pop() === 1)
+        it("should pop values in last-in-first-out order") {
+            val stack = new mutable.Stack[Int]
+            stack.push(1)
+            stack.push(2)
+            assert(stack.pop() === 2)
+            assert(stack.pop() === 1)
+        }
+
+        it("should throw NoSuchElementException if an empty stack is popped") {
+            val emptyStack = new mutable.Stack[Int]
+            intercept[NoSuchElementException] {
+                emptyStack.pop()
+            }
+        }
     }
 
-    it("should throw NoSuchElementException if an empty stack is popped") {
-      val emptyStack = new mutable.Stack[Int]
-      intercept[NoSuchElementException] {
-        emptyStack.pop()
-      }
+    describe("scan") {
+        it("scan") {
+            val path = getClass.getClassLoader.getResource("lexer1.dcaf").toURI.getPath
+            Compiler.scan(path)
+        }
     }
-  }
+
+    describe("missing") {
+        it("scan2") {
+            val path = getClass.getClassLoader.getResource("lexer2.dcaf").toURI.getPath
+            Compiler.scan(path)
+        }
+    }
 }

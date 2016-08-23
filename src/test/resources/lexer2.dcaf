@@ -1,0 +1,5 @@
+#include
+int main(int nargs) {
+    puts("yaya羊羊羊wawa");
+    printf("Hello, world, '牛');
+}

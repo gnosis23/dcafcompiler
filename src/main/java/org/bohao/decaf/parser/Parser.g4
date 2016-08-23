@@ -1,5 +1,8 @@
 grammar Parser;
 
+@header {
+package org.bohao.decaf.parser;
+}
 
 program
     : callout_decl* field_decl* method_decl*

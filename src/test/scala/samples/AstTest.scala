@@ -48,4 +48,13 @@ class AstTest extends FunSpec{
             assert(ast != null)
         }
     }
+
+    describe("error") {
+        it("error1") {
+            val path = getClass.getClassLoader.getResource("parser2.dcaf").toURI.getPath
+            val ast = Compiler.parse(path)
+
+            assert(ast == null)
+        }
+    }
 }

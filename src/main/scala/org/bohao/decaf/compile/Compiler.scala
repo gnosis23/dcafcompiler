@@ -4,7 +4,7 @@ import java.io._
 
 import org.antlr.v4.runtime._
 import org.bohao.decaf.ast.ProgramNode
-import org.bohao.decaf.parser.{ParserParser, ParserLexer}
+import org.bohao.decaf.parser.{UnderlineListener, ParserParser, ParserLexer}
 import org.bohao.decaf.util.CLI
 
 
@@ -105,11 +105,17 @@ object Compiler {
             val lexer = new ParserLexer(new ANTLRInputStream(inputStream))
             val commonToken = new CommonTokenStream(lexer)
             val parser = new ParserParser(commonToken)
+            parser.removeErrorListeners()
+            val errorListener = new UnderlineListener
+            parser.addErrorListener(errorListener)
 
             val t = parser.program().ast
+            if (errorListener.getCount > 0) {
+                throw new Exception("syntax error")
+            }
             t
         } catch {
-            case e: Exception => Console.err.println(CLI.infile + " " + e)
+            case e: Exception => Console.err.println(CLI.infile + " " + e.getMessage)
                 null
         }
     }

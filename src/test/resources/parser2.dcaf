@@ -1,0 +1,33 @@
+callout stdio;
+callout stdlib;
+
+int a, arr[100];
+boolean b;
+
+int main(int n, boolean b) {
+    int x
+    printf("%d牛\n", n);
+    x = 100;
+    x = b;
+    x = 'a';
+    x = true;
+    x = fun(1, false);
+    x = 1 + 1;
+    b = 1 > 10;
+    b = true && false;
+    b = 1 == 2;
+    c = '牛';
+    x = -x;
+    x = x > 100 ? 1 : -1;
+    n += 1;
+    fun(2, true);
+    if (x > 1)  x = 1; else { x =-1;}
+    for (i = 1, 10, 1) {
+        x += 1;
+    }
+    while (x < 10) {
+        x += 1;
+        break;
+    }
+    return n;
+}

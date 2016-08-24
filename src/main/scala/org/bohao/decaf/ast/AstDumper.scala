@@ -130,7 +130,21 @@ object AstDumper {
         }
     }
 
+    def dump(op0: OpNode, out: IndentPrintStream): Unit = {
+        op0 match {
+            case ArithOpNode(op) =>
+                out.println(s"<ArithOpNode> $op")
+            case RelOpNode(op) =>
+                out.println(s"<RelOpNode> $op")
+            case EqOpNode(op) =>
+                out.println(s"<EqOpNode> $op")
+            case CondOpNode(op) =>
+                out.println(s"<CondOpNode> $op")
+        }
+    }
+
     def dump(expr: ExpNode, out: IndentPrintStream): Unit = {
+        if (expr == null) { out.println(null); return }
         expr match {
             case LocationExprNode(location) =>
                 out.println("<LocationExprNode>")
@@ -148,9 +162,30 @@ object AstDumper {
                 dump(value, out)
                 out.unindent()
             case IdExprNode(id) =>
+                out.println(s"<IdExprNode>")
+                out.indent()
+                dump(id, out)
+                out.unindent()
             case BinExprNode(op, lhs, rhs) =>
+                out.println(s"<BinExprNode>")
+                out.indent()
+                dump(op, out)
+                dump(lhs, out)
+                dump(rhs, out)
+                out.unindent()
             case UnaryExprNode(op, exp) =>
+                out.println("<UnaryExprNode>")
+                out.indent()
+                out.println(s"op $op")
+                dump(exp, out)
+                out.unindent()
             case CondExprNode(cond, branch1, branch2) =>
+                out.println("<CondExprNode>")
+                out.indent()
+                dump(cond, out)
+                dump(branch1, out)
+                dump(branch2, out)
+                out.unindent()
         }
     }
 
@@ -164,12 +199,41 @@ object AstDumper {
                 dump(expr, out)
                 out.unindent()
             case MethodCallStmtNode(call) =>
+                out.println("<MethodCallStmtCall>")
+                out.indent()
+                dump(call, out)
+                out.unindent()
             case IfStmtNode(cond, body, elseBody) =>
+                out.println("<IfStmtNode>")
+                out.indent()
+                dump(cond, out)
+                dump(body, out)
+                dump(elseBody, out)
+                out.unindent()
             case ForStmtNode(id, initExpr, endExpr, step, body) =>
+                out.println("<ForStmtNode>")
+                out.indent()
+                dump(id, out)
+                dump(initExpr, out)
+                dump(endExpr, out)
+                dump(step, out)
+                dump(body, out)
+                out.unindent()
             case WhileStmtNode(cond, body) =>
+                out.println("<WhileStmtNode>")
+                out.indent()
+                dump(cond, out)
+                dump(body, out)
+                out.unindent()
             case ReturnStmtNode(value) =>
+                out.println("<ReturnStmtNode>")
+                out.indent()
+                dump(value, out)
+                out.unindent()
             case BreakStmtNode() =>
+                out.println("<BreakStmtNode>")
             case ContinueStmtNode() =>
+                out.println("<ContinueStmtNode>")
         }
     }
 
@@ -177,8 +241,8 @@ object AstDumper {
         out.println("<BlockNode>")
         out.indent()
 
-        block.decls.foreach(m => dump(m, out))
-        block.Stmts.foreach(stmt => dump(stmt, out))
+        if (block.decls != null) block.decls.foreach(m => dump(m, out))
+        if (block.Stmts != null) block.Stmts.foreach(stmt => dump(stmt, out))
 
         out.unindent()
     }

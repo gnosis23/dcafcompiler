@@ -34,4 +34,11 @@ public class ConverterTest {
         Assert.assertEquals(1234, Converter.toInt("01234"));
         Assert.assertEquals(0xff, Converter.toInt("0xff"));
     }
+
+    @Test
+    public void testToString() throws Exception {
+        Assert.assertEquals("%s\n", Converter.toString("\"%s\\\n\""));
+        Assert.assertEquals(" ", Converter.toString("\" \""));
+        Assert.assertEquals("", Converter.toString("\"\""));
+    }
 }

@@ -15,6 +15,10 @@ import org.bohao.decaf.ast.*;
     private boolean tobool(String text) {
         return Converter.toBool(text);
     }
+
+    private String toString(String text) {
+        return Converter.toString(text);
+    }
 }
 
 program returns [ProgramNode ast]
@@ -164,7 +168,7 @@ expr returns [ExpNode v]
 
 callout_arg returns [CalloutArgNode v]
     : e=expr {$v = new ExprArgNode($e.v);}
-    | STRINGLITERAL {$v = new StringArgNode(new StringLiteralNode($STRINGLITERAL.text));}
+    | STRINGLITERAL {$v = new StringArgNode(new StringLiteralNode(toString($STRINGLITERAL.text)));}
     ;
 
 bin_op returns [OpNode v]
@@ -180,7 +184,7 @@ rel_op: '<' | '>' | '<=' | '>=';
 
 eq_op: '==' | '!=' ;
 
-cond_op: '==' | '!=';
+cond_op: '&&' | '||';
 
 literal returns [LiteralNode v]
     : INTLITERAL    { $v = new IntLiteralNode($INTLITERAL.text); }

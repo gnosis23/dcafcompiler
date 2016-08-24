@@ -17,7 +17,7 @@ class AstTest extends FunSpec{
 
     describe("exp") {
         it("Usable") {
-            val exps = CondExprNode(BoolLiteralNode(true),
+            val exps = CondExprNode(LiteralExprNode(BoolLiteralNode(true)),
                 BinExprNode(ArithOpNode("+"), IdExprNode(VarNode("x")), IdExprNode(VarNode("y"))),
                 BinExprNode(ArithOpNode("-"), IdExprNode(VarNode("x")), IdExprNode(VarNode("y")))
             )
@@ -28,7 +28,7 @@ class AstTest extends FunSpec{
 
         it("Method") {
             val list = new util.ArrayList[CalloutArgNode]()
-            list.add(ExprArgNode(IntLiteralNode("11111")))
+            list.add(ExprArgNode(LiteralExprNode(IntLiteralNode("11111"))))
             list.add(StringArgNode(StringLiteralNode("hehe")))
             val exps = MethodCallExprNode(
                 CalloutArgsMethodCallNode(MethodNameNode(VarNode("shit")), list)
@@ -44,6 +44,7 @@ class AstTest extends FunSpec{
             val path = getClass.getClassLoader.getResource("parser1.dcaf").toURI.getPath
             val ast = Compiler.parse(path)
 
+            AstDumper.dump(ast)
             assert(ast != null)
         }
     }

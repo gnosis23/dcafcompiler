@@ -1,5 +1,17 @@
-int main(int n) {
+callout stdio;
+callout stdlib;
+
+int a, arr[100];
+boolean b;
+
+int main(int n, boolean b) {
+    int x;
     printf("%d\n", n);
+    x = 100;
+    x = b;
+    x = 'a';
+    x = true;
+    x = fun(1, false)
     n += 1;
     return n;
 }

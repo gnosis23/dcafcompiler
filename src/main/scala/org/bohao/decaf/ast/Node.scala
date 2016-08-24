@@ -56,7 +56,7 @@ case class IfStmtNode(cond: ExpNode, body: BlockNode, elseBody: BlockNode)
 
 
 case class ForStmtNode(id: VarNode, initExpr: ExpNode, endExpr: ExpNode,
-                       step: ExpNode,
+                       step: IntLiteralNode,
                        body: BlockNode) extends StmtNode
 
 case class WhileStmtNode(cond: ExpNode, body: BlockNode) extends StmtNode
@@ -141,7 +141,7 @@ case class EqOpNode(op: String) extends OpNode
 
 case class CondOpNode(op: String) extends OpNode
 
-abstract class LiteralNode extends ExpNode
+abstract class LiteralNode extends Node
 
 case class IntLiteralNode(text: String) extends LiteralNode
 

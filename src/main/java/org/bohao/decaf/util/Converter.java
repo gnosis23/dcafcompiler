@@ -6,6 +6,7 @@ package org.bohao.decaf.util;
  */
 public class Converter {
     public static char toChar(String text) {
+        if (text.startsWith("'")) text = text.substring(1);
         if (text.length() >= 2 && text.startsWith("\\")) {
             char ch = text.charAt(1);
             switch (ch) {

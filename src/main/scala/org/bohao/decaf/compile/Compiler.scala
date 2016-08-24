@@ -3,7 +3,8 @@ package org.bohao.decaf.compile
 import java.io._
 
 import org.antlr.v4.runtime._
-import org.bohao.decaf.parser.ParserLexer
+import org.bohao.decaf.ast.ProgramNode
+import org.bohao.decaf.parser.{ParserParser, ParserLexer}
 import org.bohao.decaf.util.CLI
 
 
@@ -21,7 +22,7 @@ object Compiler {
     )
     var outFile = if (CLI.outfile == null) Console.out
     else new java.io.PrintStream(
-            new java.io.FileOutputStream(CLI.outfile))
+        new java.io.FileOutputStream(CLI.outfile))
 
     def main(args: Array[String]): Unit = {
         CLI.parse(args, Array[String]())
@@ -29,12 +30,12 @@ object Compiler {
             scan(CLI.infile)
             System.exit(0)
         }
-//        else if (CLI.target == CLI.Action.PARSE) {
-//            if (parse(CLI.infile) == null) {
-//                System.exit(1)
-//            }
-//            System.exit(0)
-//        }
+        else if (CLI.target == CLI.Action.PARSE) {
+            if (parse(CLI.infile) == null) {
+                System.exit(1)
+            }
+            System.exit(0)
+        }
     }
 
     def scan(fileName: String) {
@@ -73,7 +74,7 @@ object Compiler {
                 } catch {
                     case ex: Exception =>
                         Console.out.println(CLI.infile + " " + ex)
-                        //                        lexer.emit()
+                    //                        lexer.emit()
                 }
             }
         } catch {
@@ -86,36 +87,30 @@ object Compiler {
         else str.substring(1, str.length)
     }
 
-    //    def parse(fileName: String): CommonAST = {
-    //        /**
-    //          * Parse the file specified by the filename. Eventually, this method
-    //          * may return a type specific to your compiler.
-    //          */
-    //        var inputStream: java.io.FileInputStream = null
-    //        try {
-    //            inputStream = new java.io.FileInputStream(fileName)
-    //        } catch {
-    //            case f: FileNotFoundException => {
-    //                Console.err.println("File " + fileName + " does not exist"); return null
-    //            }
-    //        }
-    //        try {
-    //            val scanner = new DecafScanner(new DataInputStream(inputStream))
-    //            val parser = new DecafParser(scanner);
-    //
-    //            parser.setTrace(CLI.debug)
-    //            parser.program()
-    //            val t = parser.getAST().asInstanceOf[CommonAST]
-    //            if (parser.getError()) {
-    //                print("[ERROR] Parse failed\n")
-    //                return null
-    //            } else if (CLI.debug) {
-    //                print(t.toStringList())
-    //            }
-    //            t
-    //        } catch {
-    //            case e: Exception => Console.err.println(CLI.infile + " " + e)
-    //                null
-    //        }
-    //    }
+    def parse(fileName: String): ProgramNode = {
+        /**
+          * Parse the file specified by the filename. Eventually, this method
+          * may return a type specific to your compiler.
+          */
+        var inputStream: java.io.FileInputStream = null
+        try {
+            inputStream = new java.io.FileInputStream(fileName)
+        } catch {
+            case f: FileNotFoundException =>
+                Console.err.println("File " + fileName + " does not exist")
+                return null
+        }
+        try {
+            val inputStream: FileInputStream = new java.io.FileInputStream(fileName)
+            val lexer = new ParserLexer(new ANTLRInputStream(inputStream))
+            val commonToken = new CommonTokenStream(lexer)
+            val parser = new ParserParser(commonToken)
+
+            val t = parser.program().ast
+            t
+        } catch {
+            case e: Exception => Console.err.println(CLI.infile + " " + e)
+                null
+        }
+    }
 }

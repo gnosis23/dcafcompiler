@@ -8,12 +8,14 @@ abstract class Node {
 //    def location(): Location
 }
 
-case class ProgramNode(callouts: List[CalloutDeclNode], fields: List[FieldDeclNode],
-                       methods: List[MethodDeclNode]) extends Node
+case class ProgramNode(callouts: java.util.List[CalloutDeclNode],
+                       fields: java.util.List[FieldDeclNode],
+                       methods: java.util.List[MethodDeclNode]) extends Node
 
 case class CalloutDeclNode(name: String) extends Node
 
-case class MethodDeclNode(t: TypeNode, name: String, params: List[ParamNode])
+case class MethodDeclNode(t: TypeNode, name: String, params: java.util.List[ParamNode],
+                          block: BlockNode)
     extends Node
 
 case class ParamNode(t: TypeNode, variable: VarNode) extends Node
@@ -61,30 +63,31 @@ case class WhileStmtNode(cond: ExpNode, body: BlockNode) extends StmtNode
 
 case class ReturnStmtNode(value: ExpNode) extends StmtNode
 
-case object BreakStmtNode extends StmtNode
+case class BreakStmtNode() extends StmtNode
 
-case object ContinueStmtNode extends StmtNode
+case class ContinueStmtNode() extends StmtNode
 
 case class AssignOpNode(op: String) extends Node
 
 //    block
 //    : '{' field_decl* statement* '}'
 //    ;
-case class BlockNode(decls: List[FieldDeclNode], Stmts: List[StmtNode]) extends Node
+case class BlockNode(decls: java.util.List[FieldDeclNode], Stmts: java.util.List[StmtNode])
+    extends Node
 
 //    field_decl
 //    : type (IDENTIFIER | IDENTIFIER '[' INTLITERAL ']')
 //    (',' (IDENTIFIER | IDENTIFIER '[' INTLITERAL ']'))* ';'
 //    ;
-case class FieldDeclNode(t: TypeNode, names: List[NameNode]) extends Node
+case class FieldDeclNode(t: TypeNode, names: java.util.List[NameNode]) extends Node
 
 abstract class TypeNode extends Node
 
-case object IntTypeNode extends TypeNode
+case class IntTypeNode() extends TypeNode
 
-case object BoolTypeNode extends TypeNode
+case class BoolTypeNode() extends TypeNode
 
-case object VoidTypeNode extends TypeNode
+case class VoidTypeNode() extends TypeNode
 
 abstract class NameNode extends Node
 
@@ -119,7 +122,7 @@ case class BinExprNode(op: OpNode, lhs: ExpNode, rhs: ExpNode)
 
 case class UnaryExprNode(op: String, exp: ExpNode) extends ExpNode
 
-case class CondExpNode(cond: ExpNode, branch1: ExpNode, branch2: ExpNode)
+case class CondExprNode(cond: ExpNode, branch1: ExpNode, branch2: ExpNode)
     extends ExpNode
 
 //    bin_op
@@ -152,10 +155,10 @@ case class BoolLiteralNode(value: Boolean) extends LiteralNode
 //    ;
 abstract class MethodCallNode extends Node
 
-case class ExpArgsMethodCallNode(name: MethodNameNode, arguments: List[ExpNode])
+case class ExpArgsMethodCallNode(name: MethodNameNode, arguments: java.util.List[ExpNode])
     extends MethodCallNode
 
-case class CalloutArgsMethodCallNode(name: MethodNameNode, arguments: List[CalloutArgNode])
+case class CalloutArgsMethodCallNode(name: MethodNameNode, arguments: java.util.List[CalloutArgNode])
     extends MethodCallNode
 
 case class MethodNameNode(id: VarNode) extends Node

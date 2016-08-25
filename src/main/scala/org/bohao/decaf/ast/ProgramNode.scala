@@ -1,0 +1,11 @@
+package org.bohao.decaf.ast
+
+import java.util
+
+/**
+  * Created by bohao on 2016/8/25.
+  */
+case class ProgramNode(callouts: util.List[CalloutDeclNode],
+                       fields: util.List[FieldDeclNode],
+                       methods: util.List[MethodDeclNode])
+    extends Node

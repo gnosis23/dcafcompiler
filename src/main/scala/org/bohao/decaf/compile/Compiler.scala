@@ -104,7 +104,7 @@ object Compiler {
             val inputStream: FileInputStream = new java.io.FileInputStream(fileName)
             val lexer = new ParserLexer(new ANTLRInputStream(inputStream))
             val commonToken = new CommonTokenStream(lexer)
-            val parser = new ParserParser(commonToken)
+            val parser = new ParserParser(commonToken, fileName)
             parser.removeErrorListeners()
             val errorListener = new UnderlineListener
             parser.addErrorListener(errorListener)

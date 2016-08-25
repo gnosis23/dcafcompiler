@@ -44,12 +44,12 @@ object AstDumper {
 
     def dump(lhs: LocationNode, out: IndentPrintStream): Unit = {
         lhs match {
-            case VarLocationExprNode(variable) =>
+            case VarLocationExprNode(loc, variable) =>
                 out.println("<VarLocationExprNode>")
                 out.indent()
                 dump(variable, out)
                 out.unindent()
-            case VarArrayLocationExprNode(variable, exp) =>
+            case VarArrayLocationExprNode(loc, variable, exp) =>
                 out.println("<VarArrayLocationExprNode>")
                 out.indent()
                 dump(variable, out)
@@ -64,12 +64,12 @@ object AstDumper {
 
     def dump(value: LiteralNode, out: IndentPrintStream): Unit = {
         value match {
-            case IntLiteralNode(text) =>
-                out.println(s"<IntLiteralNode> $text")
-            case CharLiteralNode(ch) =>
-                out.println(s"<CharLiteralNode> $ch")
-            case BoolLiteralNode(boo) =>
-                out.println(s"<BoolLiteralNode> $boo")
+            case IntLiteralNode(loc, text) =>
+                out.println(s"<IntLiteralNode> $text Line ${loc.line}:${loc.col}")
+            case CharLiteralNode(loc, ch) =>
+                out.println(s"<CharLiteralNode> $ch Line ${loc.line}:${loc.col}")
+            case BoolLiteralNode(loc, boo) =>
+                out.println(s"<BoolLiteralNode> $boo Line ${loc.line}:${loc.col}")
         }
     }
 
@@ -93,12 +93,12 @@ object AstDumper {
 
     def dump(arg: CalloutArgNode, out: IndentPrintStream): Unit = {
         arg match {
-            case ExprArgNode(exp) =>
+            case ExprArgNode(loc, exp) =>
                 out.println("<ExprArgNode>")
                 out.indent()
                 dump(exp, out)
                 out.unindent()
-            case StringArgNode(str) =>
+            case StringArgNode(loc, str) =>
                 out.println("<StringArgNode>")
                 out.indent()
                 dump(str, out)
@@ -115,13 +115,13 @@ object AstDumper {
 
     def dump(call: MethodCallNode, out: IndentPrintStream): Unit = {
         call match {
-            case ExpArgsMethodCallNode(name, arguments) =>
+            case ExpArgsMethodCallNode(loc, name, arguments) =>
                 out.println("<ExpArgsMethodCallNode>")
                 out.indent()
                 dump(name, out)
                 dump1(arguments, out)
                 out.unindent()
-            case CalloutArgsMethodCallNode(name, arguments) =>
+            case CalloutArgsMethodCallNode(loc, name, arguments) =>
                 out.println("<CalloutArgsMethodCallNode>")
                 out.indent()
                 dump(name, out)
@@ -132,13 +132,13 @@ object AstDumper {
 
     def dump(op0: OpNode, out: IndentPrintStream): Unit = {
         op0 match {
-            case ArithOpNode(op) =>
+            case ArithOpNode(loc, op) =>
                 out.println(s"<ArithOpNode> $op")
-            case RelOpNode(op) =>
+            case RelOpNode(loc, op) =>
                 out.println(s"<RelOpNode> $op")
-            case EqOpNode(op) =>
+            case EqOpNode(loc, op) =>
                 out.println(s"<EqOpNode> $op")
-            case CondOpNode(op) =>
+            case CondOpNode(loc, op) =>
                 out.println(s"<CondOpNode> $op")
         }
     }
@@ -146,40 +146,40 @@ object AstDumper {
     def dump(expr: ExpNode, out: IndentPrintStream): Unit = {
         if (expr == null) { out.println(null); return }
         expr match {
-            case LocationExprNode(location) =>
+            case LocationExprNode(loc, location) =>
                 out.println("<LocationExprNode>")
                 out.indent()
                 dump(location, out)
                 out.unindent()
-            case MethodCallExprNode(call) =>
+            case MethodCallExprNode(loc, call) =>
                 out.println("<MethodCallExprNode>")
                 out.indent()
                 dump(call, out)
                 out.unindent()
-            case LiteralExprNode(value) =>
+            case LiteralExprNode(loc, value) =>
                 out.println(s"<LiteralExprNode>")
                 out.indent()
                 dump(value, out)
                 out.unindent()
-            case IdExprNode(id) =>
+            case IdExprNode(loc, id) =>
                 out.println(s"<IdExprNode>")
                 out.indent()
                 dump(id, out)
                 out.unindent()
-            case BinExprNode(op, lhs, rhs) =>
+            case BinExprNode(loc, op, lhs, rhs) =>
                 out.println(s"<BinExprNode>")
                 out.indent()
                 dump(op, out)
                 dump(lhs, out)
                 dump(rhs, out)
                 out.unindent()
-            case UnaryExprNode(op, exp) =>
+            case UnaryExprNode(loc, op, exp) =>
                 out.println("<UnaryExprNode>")
                 out.indent()
                 out.println(s"op $op")
                 dump(exp, out)
                 out.unindent()
-            case CondExprNode(cond, branch1, branch2) =>
+            case CondExprNode(loc, cond, branch1, branch2) =>
                 out.println("<CondExprNode>")
                 out.indent()
                 dump(cond, out)
@@ -191,26 +191,26 @@ object AstDumper {
 
     def dump(stmt: StmtNode, out: IndentPrintStream): Unit = {
         stmt match {
-            case AssignStmtNode(location, op, expr) =>
+            case AssignStmtNode(loc, location, op, expr) =>
                 out.println("<AssignStmtNode>")
                 out.indent()
                 dump(location, out)
                 dump(op, out)
                 dump(expr, out)
                 out.unindent()
-            case MethodCallStmtNode(call) =>
+            case MethodCallStmtNode(loc, call) =>
                 out.println("<MethodCallStmtCall>")
                 out.indent()
                 dump(call, out)
                 out.unindent()
-            case IfStmtNode(cond, body, elseBody) =>
+            case IfStmtNode(loc, cond, body, elseBody) =>
                 out.println("<IfStmtNode>")
                 out.indent()
                 dump(cond, out)
                 dump(body, out)
                 dump(elseBody, out)
                 out.unindent()
-            case ForStmtNode(id, initExpr, endExpr, step, body) =>
+            case ForStmtNode(loc, id, initExpr, endExpr, step, body) =>
                 out.println("<ForStmtNode>")
                 out.indent()
                 dump(id, out)
@@ -219,20 +219,20 @@ object AstDumper {
                 dump(step, out)
                 dump(body, out)
                 out.unindent()
-            case WhileStmtNode(cond, body) =>
+            case WhileStmtNode(loc, cond, body) =>
                 out.println("<WhileStmtNode>")
                 out.indent()
                 dump(cond, out)
                 dump(body, out)
                 out.unindent()
-            case ReturnStmtNode(value) =>
+            case ReturnStmtNode(loc, value) =>
                 out.println("<ReturnStmtNode>")
                 out.indent()
                 dump(value, out)
                 out.unindent()
-            case BreakStmtNode() =>
+            case BreakStmtNode(loc) =>
                 out.println("<BreakStmtNode>")
-            case ContinueStmtNode() =>
+            case ContinueStmtNode(loc) =>
                 out.println("<ContinueStmtNode>")
         }
     }
@@ -264,7 +264,7 @@ object AstDumper {
     }
 
     def dump(program: ProgramNode, out: IndentPrintStream): Unit = {
-        out.println("<ProgramNode>")
+        out.println(s"<ProgramNode> ${program.location().fileName}")
         out.indent()
 
         out.println(s"[callout decls ${program.callouts.size()}]")
@@ -285,20 +285,20 @@ object AstDumper {
 
     def dump(t: TypeNode, out: IndentPrintStream): Unit = {
         t match {
-            case IntTypeNode() =>
+            case IntTypeNode(loc) =>
                 out.println("Int Type")
-            case BoolTypeNode() =>
+            case BoolTypeNode(loc) =>
                 out.println("Bool Type")
-            case VoidTypeNode() =>
+            case VoidTypeNode(loc) =>
                 out.println("Void Type")
         }
     }
 
     def dump(name: NameNode, out: IndentPrintStream): Unit = {
         name match {
-            case VarNameNode(varNode) =>
+            case VarNameNode(loc, varNode) =>
                 out.println(s"<NameNode> ${varNode.name}")
-            case ArrayNameNode(varNode, size) =>
+            case ArrayNameNode(loc, varNode, size) =>
                 out.println(s"<NameNode> ${varNode.name}[${size.text}]")
         }
     }

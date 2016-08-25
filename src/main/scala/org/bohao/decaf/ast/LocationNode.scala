@@ -10,8 +10,10 @@ package org.bohao.decaf.ast
 //
 abstract class LocationNode extends Node
 
-case class VarLocationExprNode( variable: VarNode) extends LocationNode
+case class VarLocationExprNode(loc: Location,  variable: VarNode) extends LocationNode {
+}
 
-case class VarArrayLocationExprNode(variable: VarNode, exp: ExpNode)
-    extends LocationNode
+case class VarArrayLocationExprNode(loc: Location, variable: VarNode, exp: ExpNode)
+    extends LocationNode {
+}
 

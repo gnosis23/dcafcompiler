@@ -11,10 +11,14 @@ package org.bohao.decaf.ast
 //    ;
 abstract class OpNode extends Node
 
-case class ArithOpNode(op: String) extends OpNode
+case class ArithOpNode(loc: Location, op: String) extends OpNode {
+}
 
-case class RelOpNode(op: String) extends OpNode
+case class RelOpNode(loc: Location, op: String) extends OpNode {
+}
 
-case class EqOpNode(op: String) extends OpNode
+case class EqOpNode(loc: Location, op: String) extends OpNode {
+}
 
-case class CondOpNode(op: String) extends OpNode
+case class CondOpNode(loc: Location, op: String) extends OpNode {
+}

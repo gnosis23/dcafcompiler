@@ -9,6 +9,8 @@ package org.bohao.decaf.ast
 //    ;
 abstract class CalloutArgNode extends Node
 
-case class ExprArgNode(exp: ExpNode) extends CalloutArgNode
+case class ExprArgNode(loc: Location, exp: ExpNode) extends CalloutArgNode {
+}
 
-case class StringArgNode(str: StringLiteralNode) extends CalloutArgNode
+case class StringArgNode(loc: Location, str: StringLiteralNode) extends CalloutArgNode {
+}

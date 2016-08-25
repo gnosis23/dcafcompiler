@@ -14,12 +14,17 @@ import scala.collection.JavaConverters._
   */
 class AstTest extends FunSpec{
     import sext._
+    val testLocation = new Location(0, 0)
 
     describe("exp") {
         it("Usable") {
-            val exps = CondExprNode(LiteralExprNode(BoolLiteralNode(true)),
-                BinExprNode(ArithOpNode("+"), IdExprNode(VarNode("x")), IdExprNode(VarNode("y"))),
-                BinExprNode(ArithOpNode("-"), IdExprNode(VarNode("x")), IdExprNode(VarNode("y")))
+            val exps = CondExprNode(testLocation, LiteralExprNode(testLocation, BoolLiteralNode(testLocation, value = true)),
+                BinExprNode(testLocation, ArithOpNode(testLocation, "+"),
+                    IdExprNode(testLocation, VarNode(testLocation, "x")),
+                    IdExprNode(testLocation, VarNode(testLocation, "y"))),
+                BinExprNode(testLocation, ArithOpNode(testLocation, "-"),
+                    IdExprNode(testLocation, VarNode(testLocation, "x")),
+                    IdExprNode(testLocation, VarNode(testLocation, "y")))
             )
 
             println(exps.treeString)
@@ -28,10 +33,10 @@ class AstTest extends FunSpec{
 
         it("Method") {
             val list = new util.ArrayList[CalloutArgNode]()
-            list.add(ExprArgNode(LiteralExprNode(IntLiteralNode("11111"))))
-            list.add(StringArgNode(StringLiteralNode("hehe")))
-            val exps = MethodCallExprNode(
-                CalloutArgsMethodCallNode(MethodNameNode(VarNode("shit")), list)
+            list.add(ExprArgNode(testLocation, LiteralExprNode(testLocation, IntLiteralNode(testLocation, "11111"))))
+            list.add(StringArgNode(testLocation, StringLiteralNode(testLocation, "hehe")))
+            val exps = MethodCallExprNode(testLocation,
+                CalloutArgsMethodCallNode(testLocation, MethodNameNode(testLocation, VarNode(testLocation, "shit")), list)
             )
 
             println(exps.treeString)

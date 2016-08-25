@@ -6,5 +6,8 @@ package org.bohao.decaf.ast
 //    block
 //    : '{' field_decl* statement* '}'
 //    ;
-case class BlockNode(decls: java.util.List[FieldDeclNode], Stmts: java.util.List[StmtNode])
-    extends Node
+case class BlockNode(loc: Location,
+                     decls: java.util.List[FieldDeclNode],
+                     Stmts: java.util.List[StmtNode])
+    extends Node {
+}

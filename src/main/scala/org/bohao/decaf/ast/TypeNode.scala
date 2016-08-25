@@ -5,8 +5,11 @@ package org.bohao.decaf.ast
   */
 abstract class TypeNode extends Node
 
-case class IntTypeNode() extends TypeNode
+case class IntTypeNode(loc: Location) extends TypeNode {
+}
 
-case class BoolTypeNode() extends TypeNode
+case class BoolTypeNode(loc: Location) extends TypeNode {
+}
 
-case class VoidTypeNode() extends TypeNode
+case class VoidTypeNode(loc: Location) extends TypeNode {
+}

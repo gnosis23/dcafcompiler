@@ -7,4 +7,6 @@ package org.bohao.decaf.ast
 //    : type (IDENTIFIER | IDENTIFIER '[' INTLITERAL ']')
 //    (',' (IDENTIFIER | IDENTIFIER '[' INTLITERAL ']'))* ';'
 //    ;
-case class FieldDeclNode(t: TypeNode, names: java.util.List[NameNode]) extends Node
+case class FieldDeclNode(loc: Location, t: TypeNode,
+                         names: java.util.List[NameNode])
+    extends Node

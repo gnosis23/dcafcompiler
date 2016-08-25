@@ -16,24 +16,28 @@ package org.bohao.decaf.ast
 
 abstract class StmtNode extends Node
 
-case class AssignStmtNode(location: LocationNode, op: AssignOpNode, expr: ExpNode)
+case class AssignStmtNode(loc: Location, locationNode: LocationNode,
+                          op: AssignOpNode,
+                          expr: ExpNode)
     extends StmtNode
 
-case class MethodCallStmtNode(call: MethodCallNode) extends StmtNode
+case class MethodCallStmtNode(loc: Location, call: MethodCallNode) extends StmtNode
 
-case class IfStmtNode(cond: ExpNode, body: BlockNode, elseBody: BlockNode)
+case class IfStmtNode(loc: Location, cond: ExpNode, body: BlockNode,
+                      elseBody: BlockNode)
     extends StmtNode
 
 
-case class ForStmtNode(id: VarNode, initExpr: ExpNode, endExpr: ExpNode,
+case class ForStmtNode(loc: Location, id: VarNode, initExpr: ExpNode,
+                       endExpr: ExpNode,
                        step: IntLiteralNode,
                        body: BlockNode) extends StmtNode
 
-case class WhileStmtNode(cond: ExpNode, body: BlockNode) extends StmtNode
+case class WhileStmtNode(loc: Location, cond: ExpNode, body: BlockNode) extends StmtNode
 
-case class ReturnStmtNode(value: ExpNode) extends StmtNode
+case class ReturnStmtNode(loc: Location, value: ExpNode) extends StmtNode
 
-case class BreakStmtNode() extends StmtNode
+case class BreakStmtNode(loc: Location) extends StmtNode
 
-case class ContinueStmtNode() extends StmtNode
+case class ContinueStmtNode(loc: Location) extends StmtNode
 

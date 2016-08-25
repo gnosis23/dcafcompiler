@@ -5,5 +5,7 @@ package org.bohao.decaf.ast
   */
 
 abstract class Node {
-//    def location(): Location
+    val loc: Location
+
+    def location(): Location = loc
 }

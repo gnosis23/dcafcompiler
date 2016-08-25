@@ -10,10 +10,12 @@ package org.bohao.decaf.ast
 //    ;
 abstract class MethodCallNode extends Node
 
-case class ExpArgsMethodCallNode(name: MethodNameNode, arguments: java.util.List[ExpNode])
+case class ExpArgsMethodCallNode(loc: Location, name: MethodNameNode,
+                                 arguments: java.util.List[ExpNode])
     extends MethodCallNode
 
-case class CalloutArgsMethodCallNode(name: MethodNameNode, arguments: java.util.List[CalloutArgNode])
+case class CalloutArgsMethodCallNode(loc: Location, name: MethodNameNode,
+                                     arguments: java.util.List[CalloutArgNode])
     extends MethodCallNode
 
-case class MethodNameNode(id: VarNode) extends Node
+case class MethodNameNode(loc: Location, id: VarNode) extends Node

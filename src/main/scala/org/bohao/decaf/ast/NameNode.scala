@@ -5,7 +5,7 @@ package org.bohao.decaf.ast
   */
 abstract class NameNode extends Node
 
-case class VarNameNode(loc: Location, varNode: VarNode) extends NameNode
+case class VarNameNode(loc: Location, name: String) extends NameNode
 
-case class ArrayNameNode(loc: Location, varNode: VarNode, size: IntLiteralNode)
+case class ArrayNameNode(loc: Location, name: String, size: IntLiteralNode)
     extends NameNode

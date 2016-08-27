@@ -69,12 +69,11 @@ locals [List<NameNode> names]
 name returns [NameNode v]
     : id=IDENTIFIER
       {
-        $v = new VarNameNode(loc($id), new VarNode(loc($id),$id.text));
+        $v = new VarNameNode(loc($id), $id.text);
       }
     | id=IDENTIFIER '[' i=INTLITERAL ']'
       {
-        $v = new ArrayNameNode(loc($id), new VarNode(loc($id),$id.text),
-                new IntLiteralNode(loc($id), $i.text));
+        $v = new ArrayNameNode(loc($id), $id.text, new IntLiteralNode(loc($id), $i.text));
       }
     ;
 
@@ -101,7 +100,7 @@ locals [TypeNode t, List<ParamNode> params]
 param returns [ParamNode v]
     : t=type id=IDENTIFIER
       {
-        $v = new ParamNode($t.v.location(), $t.v, new VarNode(loc($id),$id.text));
+        $v = new ParamNode($t.v.location(), $t.v, $id.text);
       }
     ;
 
@@ -146,7 +145,7 @@ locals [BlockNode b2, IntLiteralNode step, ExpNode ret]
         (',' i=INTLITERAL {$step = new IntLiteralNode(loc($i), $i.text);})? ')'
         b1=block
       {
-        $v = new ForStmtNode(loc($start2), new VarNode(loc($id),$id.text), $init.v, $end.v, $step, $b1.v);
+        $v = new ForStmtNode(loc($start2), $id.text, $init.v, $end.v, $step, $b1.v);
       }
     | start3='while' '(' e=expr ')' b1=block
       {

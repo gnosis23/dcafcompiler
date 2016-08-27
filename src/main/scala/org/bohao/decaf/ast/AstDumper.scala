@@ -31,14 +31,14 @@ object AstDumper {
     }
 
     def dump(variable: VarNode, out: IndentPrintStream): Unit = {
-        out.println(s"Variable ${variable.name}")
+        out.println(s"<VarNode> ${variable.name}")
     }
 
     def dump(param: ParamNode, out: IndentPrintStream): Unit = {
         out.println("<ParamNode>")
         out.indent()
         dump(param.t, out)
-        dump(param.variable, out)
+        out.println(param.variable)
         out.unindent()
     }
 
@@ -213,7 +213,7 @@ object AstDumper {
             case ForStmtNode(loc, id, initExpr, endExpr, step, body) =>
                 out.println("<ForStmtNode>")
                 out.indent()
-                dump(id, out)
+                out.println(id)
                 dump(initExpr, out)
                 dump(endExpr, out)
                 dump(step, out)
@@ -297,9 +297,9 @@ object AstDumper {
     def dump(name: NameNode, out: IndentPrintStream): Unit = {
         name match {
             case VarNameNode(loc, varNode) =>
-                out.println(s"<NameNode> ${varNode.name}")
+                out.println(s"<NameNode> $varNode")
             case ArrayNameNode(loc, varNode, size) =>
-                out.println(s"<NameNode> ${varNode.name}[${size.text}]")
+                out.println(s"<NameNode> $varNode[${size.text}]")
         }
     }
 

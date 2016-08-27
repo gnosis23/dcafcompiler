@@ -28,7 +28,7 @@ case class IfStmtNode(loc: Location, cond: ExpNode, body: BlockNode,
     extends StmtNode
 
 
-case class ForStmtNode(loc: Location, id: VarNode, initExpr: ExpNode,
+case class ForStmtNode(loc: Location, id: String, initExpr: ExpNode,
                        endExpr: ExpNode,
                        step: IntLiteralNode,
                        body: BlockNode) extends StmtNode

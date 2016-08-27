@@ -14,4 +14,7 @@ class Location(val line: Int, val col: Int,
     def this(loc: Location) {
         this(loc.line, loc.col, loc.fileName)
     }
+
+
+    override def toString = s"[L$line, C$col]"
 }

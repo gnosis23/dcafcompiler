@@ -35,6 +35,11 @@ object Compiler {
                 System.exit(1)
             }
             System.exit(0)
+        } else if (CLI.target == CLI.Action.INTER) {
+            if (inter(CLI.infile) == null) {
+                System.exit(1)
+            }
+            System.exit(0)
         }
     }
 
@@ -118,5 +123,19 @@ object Compiler {
             case e: Exception => Console.err.println(CLI.infile + " " + e.getMessage)
                 null
         }
+    }
+
+    def inter(fileName: String): ProgramNode = {
+        var ast = parse(fileName)
+        if (ast != null) {
+            val errorhandler = new ErrorHandler
+            ast = SemanticChecker.check(ast, errorhandler)
+            if (errorhandler.hasError) {
+                errorhandler.errorMsgs.foreach(p => Console.err.println(p))
+                System.exit(1)
+            }
+        }
+
+        ast
     }
 }

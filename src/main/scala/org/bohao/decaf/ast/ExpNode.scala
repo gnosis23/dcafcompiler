@@ -1,5 +1,7 @@
 package org.bohao.decaf.ast
 
+import org.bohao.decaf.types.IType
+
 /**
   * Created by bohao on 2016/8/25.
   */
@@ -16,7 +18,9 @@ package org.bohao.decaf.ast
 //    | expr '?' expr ':' expr
 //    ;
 
-abstract class ExpNode extends Node
+abstract class ExpNode extends Node {
+    var nodeType: IType = null
+}
 
 case class LocationExprNode(loc: Location, locationNode: LocationNode) extends ExpNode {
 }

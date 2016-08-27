@@ -7,9 +7,18 @@ class Env(val parent: Option[Env]) {
     var scopes: List[Env] = List()
     var symbols: List[ISymbol] = List()
 
-    def addSymbol(symbol: ISymbol): Unit = {
-        symbol.scope = this
-        symbols = symbol::symbols
+    def addSymbol(symbol: ISymbol): Boolean = {
+        if (!findLocal(symbol.name)) {
+            symbol.scope = this
+            symbols = symbol :: symbols
+            true
+        } else {
+            false
+        }
+    }
+
+    def findLocal(name: String): Boolean = {
+        symbols.exists(p => p.name == name)
     }
 
     def find(name: String): Option[ISymbol] = {

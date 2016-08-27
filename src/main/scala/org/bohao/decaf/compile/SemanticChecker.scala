@@ -1,5 +1,7 @@
 package org.bohao.decaf.compile
 
+import java.util
+
 import org.bohao.decaf.ast._
 import org.bohao.decaf.symbol.{ISymbol, Env}
 import org.bohao.decaf.types._
@@ -11,6 +13,7 @@ import scala.collection.JavaConversions._
   */
 object SemanticChecker {
     var errorHandler: ErrorHandler = null
+    var currentMethod: MethodDeclNode = null
 
     def check(ast: ProgramNode, errhandler: ErrorHandler): ProgramNode = {
         errorHandler = errhandler
@@ -22,15 +25,28 @@ object SemanticChecker {
         ast.fields.foreach(p => checkField(global, p))
 
         ast.methods.foreach(p => {
+            currentMethod = p
             checkMethod(global, p)}
         )
+
+        checkMain(ast)
 
         ast
     }
 
+    def checkMain(ast: ProgramNode): Unit = {
+        val method = ast.methods.find(p => p.name == "main")
+        if (method.isEmpty || method.get.methodType.paramTypeList.nonEmpty) {
+            log(s"The program must contain a definition for a method called main that has no parameters")
+        }
+    }
+
     def checkCallout(scope: Env, node: CalloutDeclNode): Unit = {
         val symbol = new ISymbol(node.name, CalloutType)
-        scope.addSymbol(symbol)
+        val result = scope.addSymbol(symbol)
+        if (!result)
+            log(s"${node.loc}: callout ${node.name} already defined, " +
+                s"No identifier is declared twice in the same scope.")
     }
 
     def checkField(scope: Env, node: FieldDeclNode) = {
@@ -38,17 +54,24 @@ object SemanticChecker {
         node.names.foreach {
             case VarNameNode(loc, name) =>
                 val symbol = new ISymbol(name, fieldType)
-                scope.addSymbol(symbol)
+                val result = scope.addSymbol(symbol)
+                if (!result)
+                    log(s"${node.loc}: field $name already defined, " +
+                        s"No identifier is declared twice in the same scope.")
             case ArrayNameNode(loc, name, size) =>
                 // FIXME ...
                 val len = Integer.valueOf(size.text)
                 val symbol = new ISymbol(name, new ArrayType(fieldType, len))
-                scope.addSymbol(symbol)
+                val result = scope.addSymbol(symbol)
+                if (!result)
+                    log(s"${node.loc}: field $name already defined")
         }
     }
 
     def checkMethod(scope: Env, methodNode: MethodDeclNode): Unit = {
-        scope.addSymbol(methodToSymbol(methodNode))
+        val tSymbol: ISymbol = methodToSymbol(methodNode)
+        scope.addSymbol(tSymbol)
+        methodNode.methodType = tSymbol.kind.asInstanceOf[FunctionType]
 
         val newEnv = createScope(scope)
 
@@ -107,9 +130,23 @@ object SemanticChecker {
                 if (value != null) {
                     checkExpression(scope, value)
                 }
-
+                checkReturn(loc, value)
             case BreakStmtNode(loc) =>
             case ContinueStmtNode(loc) =>
+        }
+    }
+
+    def checkReturn(loc: Location, expNode: ExpNode): Unit = {
+        if (expNode == null) {
+            if (currentMethod.methodType.retType != VoidType) {
+                log(s"$loc: return void, expected ${currentMethod.methodType.retType}")
+            }
+        } else {
+            if (currentMethod.methodType.retType == VoidType) {
+                log(s"$loc: A return statement must not have a return value " +
+                    s"unless it appears in the body of a method " +
+                    s"that is declared to return a value.")
+            }
         }
     }
 
@@ -127,13 +164,32 @@ object SemanticChecker {
             case LocationExprNode(loc, locationNode) =>
                 checkLocation(scope, locationNode)
             case MethodCallExprNode(loc, call) =>
-                checkMethodCall(scope, call)
+                checkMethodCall(scope, call, checkRet = true)
             case LiteralExprNode(loc, value) =>
+                value match {
+                    case IntLiteralNode(_, text) =>
+                        expNode.nodeType = IntType
+                    case CharLiteralNode(_, v) =>
+                        expNode.nodeType = CharType
+                    case BoolLiteralNode(_, v) =>
+                        expNode.nodeType = BoolType
+                }
             case IdExprNode(loc, id) =>
                 checkVariable(scope, id)
             case BinExprNode(loc, op, lhs, rhs) =>
                 checkExpression(scope, lhs)
                 checkExpression(scope, rhs)
+                op match {
+                    case ArithOpNode(loc1, op1) =>
+                        expNode.nodeType = IntType
+                    case RelOpNode(loc1, op1) =>
+                        expNode.nodeType = IntType
+                    case EqOpNode(loc1, op1) =>
+                        expNode.nodeType = BoolType
+                        // FIXME int or bool
+                    case CondOpNode(loc1, op1) =>
+                        expNode.nodeType = BoolType
+                }
             case UnaryExprNode(loc, op, exp) =>
                 checkExpression(scope, exp)
             case CondExprNode(loc, cond, branch1, branch2) =>
@@ -144,24 +200,66 @@ object SemanticChecker {
         }
     }
 
-    def checkMethodCall(scope: Env, methodCallNode: MethodCallNode): Unit = {
-        methodCallNode match {
-            case ExpArgsMethodCallNode(loc, name, arguments) =>
-                checkVariable(scope, name.id)
-                arguments.foreach(p => checkExpression(scope, p))
-            case CalloutArgsMethodCallNode(loc, name, arguments) =>
-                checkVariable(scope, name.id)
-                arguments.foreach(p => checkCalloutArg(scope, p))
+    def checkParameterLengthAndType(call: MethodCallNode, name: String,
+                                    funcDef: FunctionType,
+                                    arguments: util.List[ExpNode]): Unit =
+    {
+        assert(funcDef.paramTypeList != null, "null paramlist")
+        assert(arguments != null, "null method call paramlist")
+
+        if (funcDef.paramTypeList.length != arguments.length) {
+            log(s"${call.loc}: function $name has" +
+                s" ${funcDef.paramTypeList.length} parameter(s), got ${arguments.length}")
+        } else {
+            val plist = funcDef.paramTypeList
+            for (i <- 0 until  arguments.length) {
+                if (plist.get(i).toString != arguments.get(i).nodeType.toString) {
+                    log(s"${call.loc}: function $name parameter ${i+1} expected" +
+                        s" ${plist.get(i)} , actual ${arguments.get(i).nodeType}")
+                }
+            }
         }
     }
 
-    def checkVariable(scope: Env, varNode: VarNode) = {
+    def checkMethodCall(scope: Env, methodCallNode: MethodCallNode, checkRet: Boolean = false): Unit = {
+        methodCallNode match {
+            case ExpArgsMethodCallNode(loc, name, arguments) =>
+                val funcDefinition = checkVariable(scope, name.id)
+                arguments.foreach(p => checkExpression(scope, p))
+                if (funcDefinition.isDefined) {
+                    val symbolType = funcDefinition.get.kind
+                    symbolType match {
+                        case fd: FunctionType =>
+                            checkParameterLengthAndType(methodCallNode, name.id.name, fd, arguments)
+                            // 6. If a method call is used as an expression, the method must return a result.
+                            if (checkRet && fd.retType == VoidType) {
+                                log(s"${methodCallNode.loc}: function ${name.id.name} must return a value")
+                            }
+                        case _ =>
+                            log(s"${methodCallNode.loc}: ${name.id.name} is not a function")
+                    }
+                }
+            case CalloutArgsMethodCallNode(loc, name, arguments) =>
+                val funcDefinition = checkVariable(scope, name.id)
+                arguments.foreach(p => checkCalloutArg(scope, p))
+                // cannot check callout functions
+        }
+    }
+
+    /**
+      *
+      * @param scope  symbol table
+      * @param varNode variable node
+      * @return if find return Some(symbol), or None
+      */
+    def checkVariable(scope: Env, varNode: VarNode): Option[ISymbol] = {
         val symbol = scope.find(varNode.name)
         symbol match {
             case None =>
-                errorHandler.addError(s"${varNode.loc}: variable '${varNode.name}' undefined")
+                log(s"${varNode.loc}: variable '${varNode.name}' undefined")
             case Some(sym) => Console.out.println(s"VAR ${varNode.loc}: $sym")
         }
+        symbol
     }
 
     def checkCalloutArg(scope: Env, calloutArgNode: CalloutArgNode) = {
@@ -184,5 +282,9 @@ object SemanticChecker {
         val t = new Env(Some(parent))
         parent.addChildScope(t)
         t
+    }
+
+    private def log(msg: String): Unit = {
+        errorHandler.addError(msg)
     }
 }

@@ -1,15 +1,24 @@
 callout printf;
 callout puts;
+callout printf;
 
 int a, arr[100];
 boolean b;
 
 int f(int n) {
+    int i, j;
+    boolean i;
+    boolean j;
     if (n > 0) {
         return n + f(n - 1);
     } else {
         return 0;
     }
+    return;
+}
+
+void none() {
+    return 1;
 }
 
 int main(int n, boolean b) {
@@ -28,7 +37,12 @@ int main(int n, boolean b) {
     x = -x;
     x = x > 100 ? 1 : -1;
     n += 1;
+    x = none() + 1;
+    x(10);
     fun(2, true);
+    f(1,2,3);
+    f(1 == 2);
+
     if (x > 1) { x = 1;} else { x =-1;}
     for (i = 1, 10, 1) {
         x += 1;

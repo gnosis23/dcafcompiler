@@ -132,7 +132,7 @@ object Compiler {
             ast = SemanticChecker.check(ast, errorhandler)
             if (errorhandler.hasError) {
                 errorhandler.errorMsgs.foreach(p => Console.err.println(p))
-                System.exit(1)
+                return null
             }
         }
 

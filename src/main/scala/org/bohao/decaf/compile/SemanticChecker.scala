@@ -14,6 +14,7 @@ import scala.collection.JavaConversions._
 object SemanticChecker {
     var errorHandler: ErrorHandler = null
     var currentMethod: MethodDeclNode = null
+    val DefaultType = IntType
 
     def check(ast: ProgramNode, errhandler: ErrorHandler): ProgramNode = {
         errorHandler = errhandler
@@ -37,7 +38,7 @@ object SemanticChecker {
     def checkMain(ast: ProgramNode): Unit = {
         val method = ast.methods.find(p => p.name == "main")
         if (method.isEmpty || method.get.methodType.paramTypeList.nonEmpty) {
-            log(s"The program must contain a definition for a method called main that has no parameters")
+            log(s"error C0003: The program must contain a definition for a method called main that has no parameters")
         }
     }
 
@@ -45,7 +46,7 @@ object SemanticChecker {
         val symbol = new ISymbol(node.name, CalloutType)
         val result = scope.addSymbol(symbol)
         if (!result)
-            log(s"${node.loc}: callout ${node.name} already defined, " +
+            log(s"error C0001 ${node.loc}: callout ${node.name} already defined, " +
                 s"No identifier is declared twice in the same scope.")
     }
 
@@ -56,7 +57,7 @@ object SemanticChecker {
                 val symbol = new ISymbol(name, fieldType)
                 val result = scope.addSymbol(symbol)
                 if (!result)
-                    log(s"${node.loc}: field $name already defined, " +
+                    log(s"error C0001 ${node.loc}: field $name already defined, " +
                         s"No identifier is declared twice in the same scope.")
             case ArrayNameNode(loc, name, size) =>
                 // FIXME ...
@@ -102,10 +103,24 @@ object SemanticChecker {
             case AssignStmtNode(loc, locationNode, op, expr) =>
                 checkLocation(scope, locationNode)
                 checkExpression(scope, expr)
+
+                op.op match {
+                    case "=" =>
+                        checkAssignStmtEqual(locationNode, expr)
+                    case "+=" =>
+                        checkAssignStmtInt(locationNode, expr)
+                    case "-=" =>
+                        checkAssignStmtInt(locationNode, expr)
+                }
+
             case MethodCallStmtNode(loc, call) =>
                 checkMethodCall(scope, call)
             case IfStmtNode(loc, cond, body, elseBody) =>
                 checkExpression(scope, cond)
+                if (cond.nodeType != BoolType) {
+                    log(s"error C0013 ${cond.loc}: the expression in an if statement " +
+                        s"must have type bool")
+                }
 
                 var childScope = createScope(scope)
                 checkBlock(childScope, body)
@@ -123,6 +138,10 @@ object SemanticChecker {
 
             case WhileStmtNode(loc, cond, body) =>
                 checkExpression(scope, cond)
+                if (cond.nodeType != BoolType) {
+                    log(s"error C0013 ${cond.loc}: the expression in a while statement " +
+                        s"must have type bool")
+                }
                 val childScope = createScope(scope)
                 checkBlock(childScope, body)
 
@@ -136,35 +155,137 @@ object SemanticChecker {
         }
     }
 
+    def checkAssignStmtEqual(locationNode: LocationNode, expr: ExpNode): Unit = {
+        locationNode match {
+            case VarLocationExprNode(loc, variable) =>
+                if (variable.symbol != null && variable.symbol.kind != expr.nodeType) {
+                    log(s"error C0019 ${locationNode.loc}: the assignment statement must have " +
+                        s"the same type")
+                }
+            case VarArrayLocationExprNode(loc, variable, _) =>
+                if (variable.symbol != null) {
+                    val arrType = variable.symbol.kind
+                    arrType match {
+                        case ArrayType(baseType, size) =>
+                            if (baseType != expr.nodeType) {
+                                log(s"error C0019 ${locationNode.loc}: the assignment statement " +
+                                    s"must have the same type")
+                            }
+                        case _ =>
+                    }
+                }
+        }
+    }
+
+    def checkAssignStmtInt(locationNode: LocationNode, expr: ExpNode): Unit = {
+        locationNode match {
+            case VarLocationExprNode(loc, variable) =>
+                if (variable.symbol != null) {
+                    if (variable.symbol.kind != IntType || expr.nodeType != IntType) {
+                        log(s"error C0020 ${locationNode.loc}: " +
+                            s"the increment/decrement statement must have " +
+                            s"type int")
+                    }
+                }
+            case VarArrayLocationExprNode(loc, variable, _) =>
+                if (variable.symbol != null) {
+                    val arrType = variable.symbol.kind
+                    arrType match {
+                        case ArrayType(baseType, size) =>
+                            if (baseType != IntType || expr.nodeType != IntType) {
+                                log(s"error C0019 ${locationNode.loc}: " +
+                                    s"the increment/decrement statement " +
+                                    s"must have type int")
+                            }
+                        case _ =>
+                    }
+                }
+        }
+    }
+
     def checkReturn(loc: Location, expNode: ExpNode): Unit = {
         if (expNode == null) {
             if (currentMethod.methodType.retType != VoidType) {
-                log(s"$loc: return void, expected ${currentMethod.methodType.retType}")
+                log(s"error C0009 $loc: return void, expected ${currentMethod.methodType.retType}")
             }
         } else {
             if (currentMethod.methodType.retType == VoidType) {
-                log(s"$loc: A return statement must not have a return value " +
+                log(s"error C0009 $loc: A return statement must not have a return value " +
                     s"unless it appears in the body of a method " +
                     s"that is declared to return a value.")
             }
         }
     }
 
-    def checkLocation(scope: Env, locationNode: LocationNode) = {
+    def checkLocation(scope: Env, locationNode: LocationNode): Option[ISymbol] = {
         locationNode match {
             case VarLocationExprNode(loc, variable) =>
-                checkVariable(scope, variable)
+                val symb = checkVariable(scope, variable)
+                if (symb.isDefined) {
+                    checkLocationId(locationNode, variable.name, symb.get)
+                    return symb
+                }
+                None
             case VarArrayLocationExprNode(loc, variable, exp) =>
-                checkVariable(scope, variable)
+                val symb = checkVariable(scope, variable)
+                checkExpression(scope, exp)
+                if (symb.isDefined) {
+                    checkLocationArray(locationNode, variable, symb.get, exp)
+                    return symb
+                }
+                None
         }
     }
+
+    /**
+      * An id used as a location must name a declared local/global variable or formal parameter.
+      *
+      */
+    def checkLocationId(locationNode: LocationNode, idName: String, symbol: ISymbol): Unit = {
+        val t = symbol.kind
+        if (t.isInstanceOf[FunctionType] || t == VoidType) {
+            log(s"error C0010 ${locationNode.loc}: $idName must name a declared local/global variable or formal parameter.")
+        }
+    }
+
+    /**
+      * For all locations of the form id[expr]
+      * - id must be an array variable
+      * - the type of expr must be int
+      */
+    def checkLocationArray(locationNode: LocationNode, variable: VarNode, symbol: ISymbol,
+                           exp: ExpNode) = {
+        if (!symbol.kind.isInstanceOf[ArrayType]) {
+            log(s"error C0011 ${locationNode.loc}: ${variable.name} must be an array variable")
+        }
+        if (exp.nodeType != IntType) {
+            log(s"error C0011 ${locationNode.loc}: array index must be int")
+        }
+    }
+
+
 
     def checkExpression(scope: Env, expNode: ExpNode): Unit = {
         expNode match {
             case LocationExprNode(loc, locationNode) =>
-                checkLocation(scope, locationNode)
+                val symb = checkLocation(scope, locationNode)
+                if (symb.isDefined) {
+                    symb.get.kind match {
+                        case t: ArrayType =>
+                            expNode.nodeType = t.baseType
+                        case _ =>
+                            expNode.nodeType = symb.get.kind
+                    }
+                } else {
+                    expNode.nodeType = DefaultType
+                }
             case MethodCallExprNode(loc, call) =>
-                checkMethodCall(scope, call, checkRet = true)
+                val symb = checkMethodCall(scope, call, checkRet = true)
+                if (symb.isDefined) {
+                    expNode.nodeType = symb.get.kind
+                } else {
+                    expNode.nodeType = DefaultType
+                }
             case LiteralExprNode(loc, value) =>
                 value match {
                     case IntLiteralNode(_, text) =>
@@ -175,15 +296,21 @@ object SemanticChecker {
                         expNode.nodeType = BoolType
                 }
             case IdExprNode(loc, id) =>
-                checkVariable(scope, id)
+                // '@' ID
+                val symb = checkVariable(scope, id)
+                if (symb.isDefined) {
+                    checkArrayLengthExpression(expNode, id, symb.get)
+                }
+                expNode.nodeType = IntType
             case BinExprNode(loc, op, lhs, rhs) =>
                 checkExpression(scope, lhs)
                 checkExpression(scope, rhs)
+                checkOp(op, lhs, rhs)
                 op match {
                     case ArithOpNode(loc1, op1) =>
                         expNode.nodeType = IntType
                     case RelOpNode(loc1, op1) =>
-                        expNode.nodeType = IntType
+                        expNode.nodeType = BoolType
                     case EqOpNode(loc1, op1) =>
                         expNode.nodeType = BoolType
                         // FIXME int or bool
@@ -192,11 +319,59 @@ object SemanticChecker {
                 }
             case UnaryExprNode(loc, op, exp) =>
                 checkExpression(scope, exp)
+                op match {
+                    case "!" =>
+                        if (exp.nodeType != BoolType) {
+                            log(s"error C0018 $loc: the operands of '!' must be bool.")
+                        }
+                        expNode.nodeType = BoolType
+                    case "-" =>
+                        expNode.nodeType = IntType
+                }
+
             case CondExprNode(loc, cond, branch1, branch2) =>
                 checkExpression(scope, cond)
+                if (cond.nodeType != BoolType) {
+                    log(s"error C0014 $loc: the first expression in the ternary expression " +
+                        s"must have type bool.")
+                }
                 checkExpression(scope, branch1)
                 checkExpression(scope, branch2)
+                if (branch1.nodeType != branch2.nodeType) {
+                    log(s"error C0015 $loc: The other two expressions in a ternary conditional " +
+                        s"expression must have the same type (integer or boolean)")
+                }
 
+        }
+    }
+
+    def checkOp(op: OpNode, lhs: ExpNode, rhs: ExpNode): Unit = {
+        op match {
+            case ArithOpNode(loc, op1) =>
+                if (lhs.nodeType != IntType || rhs.nodeType != IntType) {
+                    log(s"error C0016 ${op.loc}: the operands of arithmetic expressions must have type int")
+                }
+            case RelOpNode(loc, op1) =>
+                if (lhs.nodeType != IntType || rhs.nodeType != IntType) {
+                    log(s"error C0016 ${op.loc}: the operands of arithmetic expressions must have type int")
+                }
+            case EqOpNode(loc, op1) =>
+                if (lhs.nodeType != rhs.nodeType) {
+                    log(s"error C0017 ${op.loc}: the operands of eq must be the same time")
+                }
+            case CondOpNode(loc, op1) =>
+                if (lhs.nodeType != BoolType || rhs.nodeType != BoolType) {
+                    log(s"error C0018 ${op.loc}: the operands of &&,|| must be bool.")
+                }
+        }
+    }
+
+    /**
+      * The argument of the @ operator must be an array variable
+      */
+    def checkArrayLengthExpression(expNode: ExpNode, id: VarNode, symb: ISymbol): Unit = {
+        if (!symb.kind.isInstanceOf[ArrayType]) {
+            log(s"error C0012 ${expNode.loc}: the argument of '@' operator must be an array type")
         }
     }
 
@@ -208,20 +383,20 @@ object SemanticChecker {
         assert(arguments != null, "null method call paramlist")
 
         if (funcDef.paramTypeList.length != arguments.length) {
-            log(s"${call.loc}: function $name has" +
+            log(s"error C0005 ${call.loc}: function $name has" +
                 s" ${funcDef.paramTypeList.length} parameter(s), got ${arguments.length}")
         } else {
             val plist = funcDef.paramTypeList
             for (i <- 0 until  arguments.length) {
                 if (plist.get(i).toString != arguments.get(i).nodeType.toString) {
-                    log(s"${call.loc}: function $name parameter ${i+1} expected" +
+                    log(s"error C0005 ${call.loc}: function $name parameter ${i+1} expected" +
                         s" ${plist.get(i)} , actual ${arguments.get(i).nodeType}")
                 }
             }
         }
     }
 
-    def checkMethodCall(scope: Env, methodCallNode: MethodCallNode, checkRet: Boolean = false): Unit = {
+    def checkMethodCall(scope: Env, methodCallNode: MethodCallNode, checkRet: Boolean = false): Option[ISymbol] = {
         methodCallNode match {
             case ExpArgsMethodCallNode(loc, name, arguments) =>
                 val funcDefinition = checkVariable(scope, name.id)
@@ -233,16 +408,19 @@ object SemanticChecker {
                             checkParameterLengthAndType(methodCallNode, name.id.name, fd, arguments)
                             // 6. If a method call is used as an expression, the method must return a result.
                             if (checkRet && fd.retType == VoidType) {
-                                log(s"${methodCallNode.loc}: function ${name.id.name} must return a value")
+                                log(s"error C0006 ${methodCallNode.loc}: function ${name.id.name} must return a value")
                             }
                         case _ =>
-                            log(s"${methodCallNode.loc}: ${name.id.name} is not a function")
+                            log(s"error C0001 ${methodCallNode.loc}: ${name.id.name} is not a function")
                     }
+                    symbolType
                 }
+                None
             case CalloutArgsMethodCallNode(loc, name, arguments) =>
                 val funcDefinition = checkVariable(scope, name.id)
                 arguments.foreach(p => checkCalloutArg(scope, p))
                 // cannot check callout functions
+                None
         }
     }
 
@@ -256,8 +434,10 @@ object SemanticChecker {
         val symbol = scope.find(varNode.name)
         symbol match {
             case None =>
-                log(s"${varNode.loc}: variable '${varNode.name}' undefined")
-            case Some(sym) => Console.out.println(s"VAR ${varNode.loc}: $sym")
+                log(s"error C0002 ${varNode.loc}: variable '${varNode.name}' undefined")
+            case Some(sym) =>
+                if (varNode.symbol == null) varNode.symbol = sym
+//                Console.out.println(s"VAR ${varNode.loc}: $sym")
         }
         symbol
     }

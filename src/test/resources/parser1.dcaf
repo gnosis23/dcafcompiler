@@ -14,6 +14,11 @@ int f(int n) {
     } else {
         return 0;
     }
+    f = 10;
+    n = true;
+    while(i) { i += 1; }
+    if (n) {i = 1;}
+    n = i > 0 ? 1 : true;
     return;
 }
 
@@ -23,6 +28,14 @@ void none() {
 
 int main(int n, boolean b) {
     int x;
+    int c;
+    int arr[20];
+    boolean b;
+    arr[2] = true;
+    b = !false;
+    b = !x;
+    x = 1 + (x > 0);
+    b = 1 && 2;
     printf("%d\n", n);
     x = @arr;
     x = 100;
@@ -35,6 +48,7 @@ int main(int n, boolean b) {
     b = true && false;
     b = 1 == 2;
     x = -x;
+    x = @c;
     x = x > 100 ? 1 : -1;
     n += 1;
     x = none() + 1;
@@ -42,6 +56,8 @@ int main(int n, boolean b) {
     fun(2, true);
     f(1,2,3);
     f(1 == 2);
+    c[10] = 10;
+    c[true] = 1;
 
     if (x > 1) { x = 1;} else { x =-1;}
     for (i = 1, 10, 1) {

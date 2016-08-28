@@ -313,7 +313,6 @@ object SemanticChecker {
                         expNode.nodeType = BoolType
                     case EqOpNode(loc1, op1) =>
                         expNode.nodeType = BoolType
-                        // FIXME int or bool
                     case CondOpNode(loc1, op1) =>
                         expNode.nodeType = BoolType
                 }
@@ -341,7 +340,7 @@ object SemanticChecker {
                     log(s"error C0015 $loc: The other two expressions in a ternary conditional " +
                         s"expression must have the same type (integer or boolean)")
                 }
-
+                expNode.nodeType = branch1.nodeType
         }
     }
 
@@ -388,7 +387,7 @@ object SemanticChecker {
         } else {
             val plist = funcDef.paramTypeList
             for (i <- 0 until  arguments.length) {
-                if (plist.get(i).toString != arguments.get(i).nodeType.toString) {
+                if (plist.get(i) != arguments.get(i).nodeType) {
                     log(s"error C0005 ${call.loc}: function $name parameter ${i+1} expected" +
                         s" ${plist.get(i)} , actual ${arguments.get(i).nodeType}")
                 }

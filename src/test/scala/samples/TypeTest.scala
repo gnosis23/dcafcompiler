@@ -8,9 +8,17 @@ import org.scalatest.FunSpec
   */
 class TypeTest extends FunSpec {
         describe("function type") {
-            val type1 = new FunctionType(List(IntType, BoolType),
-                new ArrayType(IntType, 10))
+            it("test1") {
+                val type1 = new FunctionType(List(IntType, BoolType),
+                    new ArrayType(IntType, 10))
 
-            println(type1)
+                val type2 = new FunctionType(List(IntType, BoolType),
+                    new ArrayType(IntType, 10))
+
+                val type3 = new FunctionType(List(IntType, BoolType), VoidType)
+
+                assert(type1 == type2)
+                assert(type1 != type3)
+            }
         }
 }

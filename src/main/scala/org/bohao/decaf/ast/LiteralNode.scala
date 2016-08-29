@@ -6,7 +6,9 @@ package org.bohao.decaf.ast
 
 abstract class LiteralNode extends Node
 
-case class IntLiteralNode(loc: Location, text: String) extends LiteralNode
+case class IntLiteralNode(loc: Location, text: String) extends LiteralNode {
+    var value: Option[Int] = None
+}
 
 case class CharLiteralNode(loc: Location, value: Char) extends LiteralNode
 

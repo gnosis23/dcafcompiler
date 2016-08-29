@@ -15,6 +15,11 @@ object SemanticChecker {
     var errorHandler: ErrorHandler = null
     var currentMethod: MethodDeclNode = null
     val DefaultType = IntType
+    var breakStack = new scala.collection.mutable.Stack[Int]()
+
+    def pushBreak() = breakStack.push(0)
+
+    def popBreak() = breakStack.pop()
 
     def check(ast: ProgramNode, errhandler: ErrorHandler): ProgramNode = {
         errorHandler = errhandler
@@ -30,6 +35,7 @@ object SemanticChecker {
             checkMethod(global, p)}
         )
 
+        assert(breakStack.isEmpty, "bad break stack.")
         checkMain(ast)
 
         ast
@@ -50,6 +56,16 @@ object SemanticChecker {
                 s"No identifier is declared twice in the same scope.")
     }
 
+    def checkIntLiteral(intNode: IntLiteralNode): Unit = {
+        try {
+            intNode.value = Some(Integer.decode(intNode.text))
+        } catch {
+            case e: Exception =>
+                intNode.value = None
+                log(s"error C0024 ${intNode.loc}: int ${intNode.text} overflow")
+        }
+    }
+
     def checkField(scope: Env, node: FieldDeclNode) = {
         val fieldType = convert(node.t)
         node.names.foreach {
@@ -60,8 +76,8 @@ object SemanticChecker {
                     log(s"error C0001 ${node.loc}: field $name already defined, " +
                         s"No identifier is declared twice in the same scope.")
             case ArrayNameNode(loc, name, size) =>
-                // FIXME ...
-                val len = Integer.valueOf(size.text)
+                checkIntLiteral(size)
+                val len = size.value.getOrElse(1)
                 val symbol = new ISymbol(name, new ArrayType(fieldType, len))
                 val result = scope.addSymbol(symbol)
                 if (!result)
@@ -131,10 +147,22 @@ object SemanticChecker {
                 }
 
             case ForStmtNode(loc, id, initExpr, endExpr, step, body) =>
+
+                checkExpression(scope, initExpr)
+                checkExpression(scope, endExpr)
+                if (initExpr.nodeType != IntType || endExpr.nodeType != IntType) {
+                    log(s"error C0021 ${initExpr.loc}: the initial expression and " +
+                    s"the ending expression of for must have type int.")
+                }
+                if (step != null) {
+                    checkIntLiteral(step)
+                }
+
+                pushBreak()
                 val childScope = createScope(scope)
-                // TODO: int only?
                 childScope.addSymbol(ISymbol(id, IntType))
                 checkBlock(childScope, body)
+                popBreak()
 
             case WhileStmtNode(loc, cond, body) =>
                 checkExpression(scope, cond)
@@ -142,8 +170,11 @@ object SemanticChecker {
                     log(s"error C0013 ${cond.loc}: the expression in a while statement " +
                         s"must have type bool")
                 }
+
+                pushBreak()
                 val childScope = createScope(scope)
                 checkBlock(childScope, body)
+                popBreak()
 
             case ReturnStmtNode(loc, value) =>
                 if (value != null) {
@@ -151,7 +182,13 @@ object SemanticChecker {
                 }
                 checkReturn(loc, value)
             case BreakStmtNode(loc) =>
+                if (breakStack.isEmpty) {
+                    log(s"error C0023 $loc: All break statements must be in a for/while")
+                }
             case ContinueStmtNode(loc) =>
+                if (breakStack.isEmpty) {
+                    log(s"error C0023 $loc: All continue statements must be in a for/while")
+                }
         }
     }
 
@@ -288,7 +325,8 @@ object SemanticChecker {
                 }
             case LiteralExprNode(loc, value) =>
                 value match {
-                    case IntLiteralNode(_, text) =>
+                    case e @ IntLiteralNode(_, text) =>
+                        checkIntLiteral(e)
                         expNode.nodeType = IntType
                     case CharLiteralNode(_, v) =>
                         expNode.nodeType = CharType

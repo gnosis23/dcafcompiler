@@ -23,6 +23,11 @@ int f(int n) {
 }
 
 void none() {
+    for (i = 0xffffffffffffffffffff, false ) {
+    }
+
+    break;
+    continue;
     return 1;
 }
 

@@ -23,11 +23,13 @@ int f(int n) {
 }
 
 void none() {
+    boolean j;
     for (i = 0xffffffffffffffffffff, false ) {
     }
 
     break;
     continue;
+    j = f(10);
     return 1;
 }
 

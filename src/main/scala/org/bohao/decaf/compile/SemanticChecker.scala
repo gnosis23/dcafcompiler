@@ -319,7 +319,7 @@ object SemanticChecker {
             case MethodCallExprNode(loc, call) =>
                 val symb = checkMethodCall(scope, call, checkRet = true)
                 if (symb.isDefined) {
-                    expNode.nodeType = symb.get.kind
+                    expNode.nodeType = symb.get
                 } else {
                     expNode.nodeType = DefaultType
                 }
@@ -433,7 +433,11 @@ object SemanticChecker {
         }
     }
 
-    def checkMethodCall(scope: Env, methodCallNode: MethodCallNode, checkRet: Boolean = false): Option[ISymbol] = {
+    /**
+      *
+      * @return function return type
+      */
+    def checkMethodCall(scope: Env, methodCallNode: MethodCallNode, checkRet: Boolean = false): Option[IType] = {
         methodCallNode match {
             case ExpArgsMethodCallNode(loc, name, arguments) =>
                 val funcDefinition = checkVariable(scope, name.id)
@@ -446,15 +450,18 @@ object SemanticChecker {
                             // 6. If a method call is used as an expression, the method must return a result.
                             if (checkRet && fd.retType == VoidType) {
                                 log(s"error C0006 ${methodCallNode.loc}: function ${name.id.name} must return a value")
+                                return None
                             }
+                            return Some(fd.retType)
                         case _ =>
                             log(s"error C0001 ${methodCallNode.loc}: ${name.id.name} is not a function")
+                            return None
                     }
-                    symbolType
+                } else {
+                    None
                 }
-                None
             case CalloutArgsMethodCallNode(loc, name, arguments) =>
-                val funcDefinition = checkVariable(scope, name.id)
+                checkVariable(scope, name.id)
                 arguments.foreach(p => checkCalloutArg(scope, p))
                 // cannot check callout functions
                 None

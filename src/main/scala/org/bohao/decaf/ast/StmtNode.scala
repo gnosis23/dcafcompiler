@@ -18,7 +18,7 @@ abstract class StmtNode extends Node
 
 case class AssignStmtNode(loc: Location, locationNode: LocationNode,
                           op: AssignOpNode,
-                          expr: ExpNode)
+                          var expr: ExpNode)
     extends StmtNode
 
 case class MethodCallStmtNode(loc: Location, call: MethodCallNode) extends StmtNode
@@ -28,14 +28,15 @@ case class IfStmtNode(loc: Location, cond: ExpNode, body: BlockNode,
     extends StmtNode
 
 
-case class ForStmtNode(loc: Location, id: String, initExpr: ExpNode,
-                       endExpr: ExpNode,
+case class ForStmtNode(loc: Location, id: String,
+                       var initExpr: ExpNode,
+                       var endExpr: ExpNode,
                        step: IntLiteralNode,
                        body: BlockNode) extends StmtNode
 
 case class WhileStmtNode(loc: Location, cond: ExpNode, body: BlockNode) extends StmtNode
 
-case class ReturnStmtNode(loc: Location, value: ExpNode) extends StmtNode
+case class ReturnStmtNode(loc: Location, var value: ExpNode) extends StmtNode
 
 case class BreakStmtNode(loc: Location) extends StmtNode
 

@@ -116,9 +116,12 @@ object SemanticChecker {
         blockNode.decls.foreach(p => checkField(scope, p))
 
         blockNode.Stmts.foreach {
-            case AssignStmtNode(loc, locationNode, op, expr) =>
+            case node @ AssignStmtNode(loc, locationNode, op, expr) =>
                 checkLocation(scope, locationNode)
-                checkExpression(scope, expr)
+                val fixedExp = checkExpression(scope, expr)
+                if (fixedExp.isDefined) {
+                    node.expr = fixedExp.get
+                }
 
                 op.op match {
                     case "=" =>
@@ -146,10 +149,16 @@ object SemanticChecker {
                     checkBlock(childScope, elseBody)
                 }
 
-            case ForStmtNode(loc, id, initExpr, endExpr, step, body) =>
+            case node @ ForStmtNode(loc, id, initExpr, endExpr, step, body) =>
 
-                checkExpression(scope, initExpr)
-                checkExpression(scope, endExpr)
+                val fixedInitExp1 = checkExpression(scope, initExpr)
+                if (fixedInitExp1.isDefined) {
+                    node.initExpr = fixedInitExp1.get
+                }
+                val fixedEndExp2 = checkExpression(scope, endExpr)
+                if (fixedEndExp2.isDefined) {
+                    node.endExpr = fixedEndExp2.get
+                }
                 if (initExpr.nodeType != IntType || endExpr.nodeType != IntType) {
                     log(s"error C0021 ${initExpr.loc}: the initial expression and " +
                     s"the ending expression of for must have type int.")
@@ -176,9 +185,12 @@ object SemanticChecker {
                 checkBlock(childScope, body)
                 popBreak()
 
-            case ReturnStmtNode(loc, value) =>
+            case node @ ReturnStmtNode(loc, value) =>
                 if (value != null) {
-                    checkExpression(scope, value)
+                    val fixedNode = checkExpression(scope, value)
+                    if (fixedNode.isDefined) {
+                        node.value = fixedNode.get
+                    }
                 }
                 checkReturn(loc, value)
             case BreakStmtNode(loc) =>
@@ -263,9 +275,12 @@ object SemanticChecker {
                     return symb
                 }
                 None
-            case VarArrayLocationExprNode(loc, variable, exp) =>
+            case node @ VarArrayLocationExprNode(loc, variable, exp) =>
                 val symb = checkVariable(scope, variable)
-                checkExpression(scope, exp)
+                val fixed = checkExpression(scope, exp)
+                if (fixed.isDefined) {
+                    node.exp = fixed.get
+                }
                 if (symb.isDefined) {
                     checkLocationArray(locationNode, variable, symb.get, exp)
                     return symb
@@ -302,7 +317,8 @@ object SemanticChecker {
 
 
 
-    def checkExpression(scope: Env, expNode: ExpNode): Unit = {
+    def checkExpression(scope: Env, expNode: ExpNode): Option[ExpNode] = {
+        var fixedNode: Option[ExpNode] = None
         expNode match {
             case LocationExprNode(loc, locationNode) =>
                 val symb = checkLocation(scope, locationNode)
@@ -340,9 +356,15 @@ object SemanticChecker {
                     checkArrayLengthExpression(expNode, id, symb.get)
                 }
                 expNode.nodeType = IntType
-            case BinExprNode(loc, op, lhs, rhs) =>
-                checkExpression(scope, lhs)
-                checkExpression(scope, rhs)
+            case e @ BinExprNode(loc, op, lhs, rhs) =>
+                val fixedlhs = checkExpression(scope, lhs)
+                if (fixedlhs.isDefined) {
+                    e.lhs = fixedlhs.get
+                }
+                val fixedrhs = checkExpression(scope, rhs)
+                if (fixedrhs.isDefined) {
+                    e.rhs = fixedrhs.get
+                }
                 checkOp(op, lhs, rhs)
                 op match {
                     case ArithOpNode(loc1, op1) =>
@@ -354,8 +376,18 @@ object SemanticChecker {
                     case CondOpNode(loc1, op1) =>
                         expNode.nodeType = BoolType
                 }
-            case UnaryExprNode(loc, op, exp) =>
+            case unary @ UnaryExprNode(loc, "-", exp @ LiteralExprNode(_, intLiteral: IntLiteralNode)) =>
                 checkExpression(scope, exp)
+                if (intLiteral.value.isDefined) {
+                    intLiteral.value = Option(-intLiteral.value.get)
+                    fixedNode = Some(exp)
+                }
+                expNode.nodeType = IntType
+            case unary @ UnaryExprNode(loc, op, exp) =>
+                val fixed = checkExpression(scope, exp)
+                if (fixed.isDefined) {
+                    unary.exp = fixed.get
+                }
                 op match {
                     case "!" =>
                         if (exp.nodeType != BoolType) {
@@ -366,20 +398,27 @@ object SemanticChecker {
                         expNode.nodeType = IntType
                 }
 
-            case CondExprNode(loc, cond, branch1, branch2) =>
+            case node @ CondExprNode(loc, cond, branch1, branch2) =>
                 checkExpression(scope, cond)
                 if (cond.nodeType != BoolType) {
                     log(s"error C0014 $loc: the first expression in the ternary expression " +
                         s"must have type bool.")
                 }
-                checkExpression(scope, branch1)
-                checkExpression(scope, branch2)
+                val fixedB1 = checkExpression(scope, branch1)
+                if (fixedB1.isDefined) {
+                    node.branch1 = fixedB1.get
+                }
+                val fixedB2 = checkExpression(scope, branch2)
+                if (fixedB2.isDefined) {
+                    node.branch2 = fixedB2.get
+                }
                 if (branch1.nodeType != branch2.nodeType) {
                     log(s"error C0015 $loc: The other two expressions in a ternary conditional " +
                         s"expression must have the same type (integer or boolean)")
                 }
                 expNode.nodeType = branch1.nodeType
         }
+        fixedNode
     }
 
     def checkOp(op: OpNode, lhs: ExpNode, rhs: ExpNode): Unit = {
@@ -441,7 +480,9 @@ object SemanticChecker {
         methodCallNode match {
             case ExpArgsMethodCallNode(loc, name, arguments) =>
                 val funcDefinition = checkVariable(scope, name.id)
+//                 TODO: ...
                 arguments.foreach(p => checkExpression(scope, p))
+
                 if (funcDefinition.isDefined) {
                     val symbolType = funcDefinition.get.kind
                     symbolType match {
@@ -488,8 +529,11 @@ object SemanticChecker {
 
     def checkCalloutArg(scope: Env, calloutArgNode: CalloutArgNode) = {
         calloutArgNode match {
-            case ExprArgNode(loc, exp) =>
-                checkExpression(scope, exp)
+            case node @ ExprArgNode(loc, exp) =>
+                val fixed = checkExpression(scope, exp)
+                if (fixed.isDefined) {
+                    node.exp = fixed.get
+                }
             case StringArgNode(loc, str) =>
         }
     }

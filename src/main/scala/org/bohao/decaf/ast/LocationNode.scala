@@ -13,7 +13,7 @@ abstract class LocationNode extends Node
 case class VarLocationExprNode(loc: Location,  variable: VarNode) extends LocationNode {
 }
 
-case class VarArrayLocationExprNode(loc: Location, variable: VarNode, exp: ExpNode)
+case class VarArrayLocationExprNode(loc: Location, variable: VarNode, var exp: ExpNode)
     extends LocationNode {
 }
 

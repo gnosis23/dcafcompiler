@@ -208,7 +208,8 @@ object AstDumper {
                 out.indent()
                 dump(cond, out)
                 dump(body, out)
-                dump(elseBody, out)
+                if (elseBody != null)
+                    dump(elseBody, out)
                 out.unindent()
             case ForStmtNode(loc, id, initExpr, endExpr, step, body) =>
                 out.println("<ForStmtNode>")
@@ -216,7 +217,8 @@ object AstDumper {
                 out.println(id)
                 dump(initExpr, out)
                 dump(endExpr, out)
-                dump(step, out)
+                if (step != null)
+                    dump(step, out)
                 dump(body, out)
                 out.unindent()
             case WhileStmtNode(loc, cond, body) =>

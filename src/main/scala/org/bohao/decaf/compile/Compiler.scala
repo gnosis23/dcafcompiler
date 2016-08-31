@@ -4,6 +4,7 @@ import java.io._
 
 import org.antlr.v4.runtime._
 import org.bohao.decaf.ast.ProgramNode
+import org.bohao.decaf.ir.{Ir, BasicBlock}
 import org.bohao.decaf.parser.{UnderlineListener, ParserParser, ParserLexer}
 import org.bohao.decaf.util.CLI
 
@@ -40,6 +41,10 @@ object Compiler {
                 System.exit(1)
             }
             System.exit(0)
+        } else if (CLI.target == CLI.Action.ASSEMBLY) {
+            if (asm(CLI.infile) == null) {
+                System.exit(1)
+            }
         }
     }
 
@@ -137,5 +142,20 @@ object Compiler {
         }
 
         ast
+    }
+
+    def asm(fileName: String): Ir = {
+        var ast = parse(fileName)
+        if (ast != null) {
+            val errorhandler = new ErrorHandler
+            ast = SemanticChecker.check(ast, errorhandler)
+            if (errorhandler.hasError) {
+                errorhandler.errorMsgs.foreach(p => Console.err.println(p))
+                return null
+            }
+        }
+
+        val block = CFGTransformer.build(ast)
+        block
     }
 }

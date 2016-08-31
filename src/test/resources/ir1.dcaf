@@ -1,0 +1,28 @@
+void test() {
+    boolean c, d;
+    int x, y, z;
+
+        x = y + 1;
+        y = 2 * z;
+
+            x = y + z;
+
+        z = 1;
+
+    z = x;
+}
+
+int main() {
+    boolean c, d;
+    int x, y, z;
+    while(c) {
+        x = y + 1;
+        y = 2 * z;
+        if (d) {
+            x = y + z;
+        }
+        z = 1;
+    }
+    z = x;
+    return z;
+}

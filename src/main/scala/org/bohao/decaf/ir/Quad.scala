@@ -10,6 +10,8 @@ abstract class Quad() {
 
 case class Q1(dest: Operand) extends Quad
 
+case class QArrayLen(dest: Lhs, src1: Operand) extends Quad
+
 case class QAdd(dest: Lhs, src1: Operand, src2: Operand) extends Quad {
 
 }
@@ -50,6 +52,10 @@ case class QTestle(dest: Lhs, left: Operand, right: Operand) extends Quad
 case class QCJmp(cond: Operand, b1: QLabel, b2: QLabel) extends Quad{
 
 }
+
+case class QNeg(dest: Lhs, src: Operand) extends Quad
+
+case class QBang(dest: Lhs, src: Operand) extends Quad
 
 case class QJmp(dest: QLabel) extends Quad {
 

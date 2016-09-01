@@ -30,7 +30,7 @@ object IrGenerator {
         val list = new mutable.MutableList[Quad]
         stmt match {
             case AssignStmtNode(loc, locationNode, op, expr) =>
-                val q1 = build(locationNode)
+                val q1 = build(list, locationNode)
                 val q2 = build(list, expr)
                 val t = createQuad(QAssign(q1, open(q2)))
                 list += t
@@ -96,6 +96,7 @@ object IrGenerator {
                     case VarArrayLocationExprNode(_, variable, exp) =>
                 }
             case MethodCallExprNode(loc, call) =>
+                // TODO: func
             case LiteralExprNode(loc, value) =>
                 value match {
                     case e @ IntLiteralNode(_, text) =>
@@ -106,6 +107,9 @@ object IrGenerator {
                         return Q1(IntOperand(if(v) 1 else 0))
                 }
             case IdExprNode(loc, id) =>
+                val quad = createQuad(QArrayLen(TempVarOperand(), VarOperand(id.name)))
+                basicBlock += quad
+                return quad
             case BinExprNode(loc, op, lhs, rhs) =>
                 op match {
                     case ArithOpNode(_, op1) =>
@@ -184,17 +188,30 @@ object IrGenerator {
                         }
                 }
             case UnaryExprNode(loc, op, exp) =>
+                op match {
+                    case "!" =>
+                        val q = build(basicBlock, exp)
+                        val temp = TempVarOperand()
+                        basicBlock += createQuad(QBang(temp, open(q)))
+                        return Q1(temp)
+                    case "-" =>
+                        val q = build(basicBlock, exp)
+                        val temp = TempVarOperand()
+                        basicBlock += createQuad(QNeg(temp, open(q)))
+                        return Q1(temp)
+                }
             case CondExprNode(loc, cond, branch1, branch2) =>
         }
         null
     }
 
-    def build(locationNode: LocationNode): Lhs = {
+    def build(quads: mutable.MutableList[Quad], locationNode: LocationNode): Lhs = {
         locationNode match {
             case VarLocationExprNode(loc, variable) =>
                 VarOperand(variable.name)
             case VarArrayLocationExprNode(loc, variable, exp) =>
-                ???
+                val quad = build(quads, exp)
+                ArrayOperand(variable.name, open(quad))
         }
     }
 
@@ -217,6 +234,9 @@ object IrGenerator {
             case QTestge(dest, left, right) => dest
             case QTestl(dest, left, right) => dest
             case QTestle(dest, left, right) => dest
+            case QNeg(dest, src) => dest
+            case QBang(dest, src) => dest
+            case QArrayLen(dest, src) => dest
             case _ => throw new Error("unsupported expression return quad type" + quad)
         }
     }

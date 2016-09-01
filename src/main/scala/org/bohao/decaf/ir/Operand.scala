@@ -18,6 +18,10 @@ case class VarOperand(name: String) extends Lhs {
     var symbol: ISymbol = null
 }
 
+case class ArrayOperand(name: String, index: Operand) extends Lhs {
+
+}
+
 case class IntOperand(value: Int) extends Operand {
 
 }

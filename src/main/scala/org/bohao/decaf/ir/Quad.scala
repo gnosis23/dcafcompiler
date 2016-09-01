@@ -81,3 +81,7 @@ object QLabel {
 object QRet0 extends Quad
 
 case class QRet1(src: Operand) extends Quad
+
+case class QBreak(label: QLabel) extends Quad
+
+case class QContinue(label: QLabel) extends Quad

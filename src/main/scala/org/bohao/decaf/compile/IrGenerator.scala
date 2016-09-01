@@ -9,6 +9,8 @@ import scala.collection.mutable
   * Created by bohao on 2016/8/31.
   */
 object IrGenerator {
+    var loopStack = new mutable.Stack[(QLabel, QLabel)]()
+
     def build(ast: ProgramNode): Ir = {
         // ast.methods.foreach(p => build(p))
         build(ast.methods.get(0))
@@ -58,13 +60,14 @@ object IrGenerator {
                 val labelStart = QLabel()
                 val labelTrue = QLabel()
                 val labelFalse = QLabel()
+                pushLoop(labelStart, labelFalse)
                 val index = VarOperand(id)
                 val initQuad = build(list, initExpr)
                 list += createQuad(QAssign(index, open(initQuad)))
                 val endQuad = build(list, endExpr)
                 list += labelStart
                 val temp = TempVarOperand()
-                list += createQuad(QSub(temp, index, open(endQuad)))
+                list += createQuad(QTestle(temp, index, open(endQuad)))
                 list += createQuad(QCJmp(temp, labelTrue, labelFalse))
                 list += labelTrue
                 list ++= build(body)
@@ -73,11 +76,13 @@ object IrGenerator {
                 }
                 list += createQuad(QJmp(labelStart))
                 list += labelFalse
+                popLoop()
                 return list
             case WhileStmtNode(loc, cond, body) =>
                 val labelStart = QLabel()
                 val labelTrue = QLabel()
                 val labelFalse = QLabel()
+                pushLoop(labelStart, labelFalse)
                 list += labelStart
                 val condQuad = build(list, cond)
                 list += createQuad(QCJmp(open(condQuad), labelTrue, labelFalse))
@@ -85,6 +90,7 @@ object IrGenerator {
                 list ++= build(body)
                 list += QJmp(labelStart)
                 list += labelFalse
+                popLoop()
                 return list
             case ReturnStmtNode(loc, value) =>
                 if (value == null) {
@@ -94,8 +100,12 @@ object IrGenerator {
                     list += QRet1(open(quad))
                 }
                 return list
-            case BreakStmtNode(loc) => ???
-            case ContinueStmtNode(loc) => ???
+            case BreakStmtNode(loc) =>
+                list += QBreak(topLoop()._2)
+                return list
+            case ContinueStmtNode(loc) =>
+                list += QContinue(topLoop()._1)
+                return list
         }
     }
 
@@ -279,6 +289,25 @@ object IrGenerator {
 
     private def createQuad(quad: Quad): Quad = {
         quad
+    }
+
+    private def pushLoop(in: QLabel, out: QLabel): Unit = {
+        loopStack.push((in, out))
+    }
+
+    private def popLoop(): Unit = {
+        loopStack.pop()
+    }
+
+    /**
+      *
+      * @return (again label, out label)
+      */
+    private def topLoop(): (QLabel, QLabel) = {
+        if (loopStack.isEmpty) {
+            throw new Error("bad loop")
+        }
+        loopStack.top
     }
 
     private def open(quad : Quad): Operand = {

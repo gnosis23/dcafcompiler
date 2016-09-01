@@ -93,5 +93,11 @@ class IrTest extends FunSpec {
             assert(ir != null)
         }
 
+        it("ir break") {
+            val path = getClass.getClassLoader.getResource("ir-for-break.dcaf").toURI.getPath
+            val ir = Compiler.asm(path)
+            ir.start.foreach(println)
+            assert(ir != null)
+        }
     }
 }

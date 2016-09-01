@@ -37,6 +37,20 @@ class IrTest extends FunSpec {
             assert(ir != null)
         }
 
+        it("and") {
+            val path = getClass.getClassLoader.getResource("ir-and.dcaf").toURI.getPath
+            val ir = Compiler.asm(path)
+            ir.start.foreach(println)
+            assert(ir != null)
+        }
+
+        it("or") {
+            val path = getClass.getClassLoader.getResource("ir-or.dcaf").toURI.getPath
+            val ir = Compiler.asm(path)
+            ir.start.foreach(println)
+            assert(ir != null)
+        }
+
         it("while + if") {
             val path = getClass.getClassLoader.getResource("ir1.dcaf").toURI.getPath
             val ir = Compiler.asm(path)

@@ -54,7 +54,7 @@ object IrGenerator {
                 val labelStart = QLabel()
                 val labelTrue = QLabel()
                 val labelFalse = QLabel()
-                var index = VarOperand(id)
+                val index = VarOperand(id)
                 val initQuad = build(list, initExpr)
                 list += createQuad(QAssign(index, open(initQuad)))
                 val endQuad = build(list, endExpr)
@@ -107,14 +107,84 @@ object IrGenerator {
                 }
             case IdExprNode(loc, id) =>
             case BinExprNode(loc, op, lhs, rhs) =>
-                val q1 = build(basicBlock, lhs)
-                val q2 = build(basicBlock, rhs)
-                val t = createQuad(QAdd(TempVarOperand(), open(q1), open(q2)))
-                basicBlock.+=(t)
-                return t
+                op match {
+                    case ArithOpNode(_, op1) =>
+                        val q1 = build(basicBlock, lhs)
+                        val q2 = build(basicBlock, rhs)
+                        var t: Quad = null
+                        op1 match {
+                            case "+" =>
+                                t = createQuad(QAdd(TempVarOperand(), open(q1), open(q2)))
+                            case "-" =>
+                                t = createQuad(QSub(TempVarOperand(), open(q1), open(q2)))
+                            case "*" =>
+                                t = createQuad(QMul(TempVarOperand(), open(q1), open(q2)))
+                            case "/" =>
+                                t = createQuad(QDiv(TempVarOperand(), open(q1), open(q2)))
+                            case "%" =>
+                                t = createQuad(QMod(TempVarOperand(), open(q1), open(q2)))
+                        }
+                        basicBlock += t
+                        return t
+                    case RelOpNode(_, op1) =>
+                        val q1 = build(basicBlock, lhs)
+                        val q2 = build(basicBlock, rhs)
+                        var t: Quad = null
+                        op1 match {
+                            case "<" =>
+                                t = createQuad(QTestl(TempVarOperand(), open(q1), open(q2)))
+                            case ">" =>
+                                t = createQuad(QTestg(TempVarOperand(), open(q1), open(q2)))
+                            case "<=" =>
+                                t = createQuad(QTestle(TempVarOperand(), open(q1), open(q2)))
+                            case ">=" =>
+                                t = createQuad(QTestge(TempVarOperand(), open(q1), open(q2)))
+                        }
+                        basicBlock += t
+                        return t
+                    case EqOpNode(_, op1) =>
+                        val q1 = build(basicBlock, lhs)
+                        val q2 = build(basicBlock, rhs)
+                        var t: Quad = null
+                        op1 match {
+                            case "==" =>
+                                t = createQuad(QTeste(TempVarOperand(), open(q1), open(q2)))
+                            case "!=" =>
+                                t = createQuad(QTestne(TempVarOperand(), open(q1), open(q2)))
+                        }
+                        basicBlock += t
+                        return t
+                    case CondOpNode(_, op1) =>
+                        op1 match {
+                            case "&&" =>
+                                val q1 = build(basicBlock, lhs)
+                                val labelTrue = QLabel()
+                                val labelFalse = QLabel()
+                                val temp = TempVarOperand()
+                                basicBlock += createQuad(QTestne(temp, open(q1), IntOperand(0)))
+                                basicBlock += createQuad(QCJmp(temp, labelTrue, labelFalse))
+                                basicBlock += labelTrue
+                                val q2 = build(basicBlock, rhs)
+                                basicBlock += createQuad(QTestne(temp, open(q2), IntOperand(0)))
+                                basicBlock += labelFalse
+                                return Q1(temp)
+                            case "||" =>
+                                val q1 = build(basicBlock, lhs)
+                                val labelTrue = QLabel()
+                                val labelFalse = QLabel()
+                                val temp = TempVarOperand()
+
+                                basicBlock += createQuad(QTestne(temp, open(q1), IntOperand(0)))
+                                basicBlock += createQuad(QCJmp(temp, labelFalse, labelTrue))
+                                basicBlock += labelTrue
+                                val q2 = build(basicBlock, rhs)
+                                basicBlock += createQuad(QTestne(temp, open(q2), IntOperand(0)))
+                                basicBlock += labelFalse
+                                return Q1(temp)
+                        }
+                }
             case UnaryExprNode(loc, op, exp) =>
             case CondExprNode(loc, cond, branch1, branch2) =>
-            case _ =>
         }
         null
     }
@@ -140,10 +210,14 @@ object IrGenerator {
             case QMul(dest, src1, src2) => dest
             case QDiv(dest, src1, src2) => dest
             case QAssign(dest, src) => dest
-            case QCJmp(cond, b1, b2) => ???
-            case QJmp(dest) => ???
             case Q1(dest) => dest
-            case _ => ???
+            case QTeste(dest, left, right) => dest
+            case QTestne(dest, left, right) => dest
+            case QTestg(dest, left, right) => dest
+            case QTestge(dest, left, right) => dest
+            case QTestl(dest, left, right) => dest
+            case QTestle(dest, left, right) => dest
+            case _ => throw new Error("unsupported expression return quad type" + quad)
         }
     }
 }

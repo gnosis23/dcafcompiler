@@ -26,10 +26,25 @@ case class QDiv(dest: Lhs, src1: Operand, src2: Operand) extends Quad {
 
 }
 
+case class QMod(dest: Lhs, src1: Operand, src2: Operand) extends Quad {
+
+}
+
 case class QAssign(dest: Lhs, src: Operand) extends Quad {
 
 }
 
+case class QTeste(dest: Lhs, left: Operand, right: Operand) extends Quad
+
+case class QTestne(dest: Lhs, left: Operand, right: Operand) extends Quad
+
+case class QTestg(dest: Lhs, left: Operand, right: Operand) extends Quad
+
+case class QTestge(dest: Lhs, left: Operand, right: Operand) extends Quad
+
+case class QTestl(dest: Lhs, left: Operand, right: Operand) extends Quad
+
+case class QTestle(dest: Lhs, left: Operand, right: Operand) extends Quad
 
 
 case class QCJmp(cond: Operand, b1: QLabel, b2: QLabel) extends Quad{

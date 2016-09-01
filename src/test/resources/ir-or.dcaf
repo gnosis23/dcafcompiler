@@ -1,0 +1,10 @@
+int main() {
+    boolean c, d;
+    int x, y, z;
+    if( c ||  d) {
+        x = y + 1;
+        y = 2 * z;
+    }
+    z = x;
+    return z;
+}

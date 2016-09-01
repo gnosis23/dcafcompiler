@@ -32,10 +32,23 @@ case class QAssign(dest: Lhs, src: Operand) extends Quad {
 
 
 
-case class QCJmp(cond: Operand, b1: BasicBlockOperand, b2: BasicBlockOperand) extends Quad{
+case class QCJmp(cond: Operand, b1: QLabel, b2: QLabel) extends Quad{
 
 }
 
-case class QJmp(dest: BasicBlockOperand) extends Quad {
+case class QJmp(dest: QLabel) extends Quad {
 
+}
+
+case class QLabel(val id: String) extends Quad {
+
+}
+
+object QLabel {
+    var id = 0
+
+    def apply(): QLabel = {
+        id += 1
+        QLabel("L" + id)
+    }
 }

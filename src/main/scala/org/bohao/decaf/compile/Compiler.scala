@@ -155,7 +155,7 @@ object Compiler {
             }
         }
 
-        val block = CFGTransformer.build(ast)
+        val block = IrGenerator.build(ast)
         block
     }
 }

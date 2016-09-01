@@ -4,9 +4,9 @@ void test() {
 
         x = y + 1;
         y = 2 * z;
-
+        if (d) {
             x = y + z;
-
+        }
         z = 1;
 
     z = x;

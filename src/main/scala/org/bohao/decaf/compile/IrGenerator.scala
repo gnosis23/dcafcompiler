@@ -3,11 +3,12 @@ package org.bohao.decaf.compile
 import org.bohao.decaf.ast._
 import org.bohao.decaf.ir._
 import scala.collection.JavaConversions._
+import scala.collection.mutable
 
 /**
   * Created by bohao on 2016/8/31.
   */
-object CFGTransformer {
+object IrGenerator {
     def build(ast: ProgramNode): Ir = {
         // ast.methods.foreach(p => build(p))
         build(ast.methods.get(0))
@@ -17,25 +18,38 @@ object CFGTransformer {
         Ir(build(method.block))
     }
 
-    def build(block: BlockNode): BasicBlock = {
-        val blocks: List[BasicBlock] = block.Stmts.map(p => build(p)).toList
-        blocks.get(0)
+    def build(block: BlockNode): List[Quad] = {
+        val templist = new mutable.MutableList[Quad]
+        block.Stmts.foreach(p => {
+            templist ++= build(p)
+        })
+        templist.toList
     }
 
-    def build(stmt: StmtNode): BasicBlock = {
-        val basicBlock = new BasicBlock
-
+    def build(stmt: StmtNode): mutable.MutableList[Quad] = {
+        val list = new mutable.MutableList[Quad]
         stmt match {
             case AssignStmtNode(loc, locationNode, op, expr) =>
                 val q1 = build(locationNode)
-                val q2 = build(basicBlock, expr)
+                val q2 = build(list, expr)
                 val t = createQuad(QAssign(q1, open(q2)))
-                basicBlock.add(t)
+                list += t
             case MethodCallStmtNode(loc, call) =>
             case IfStmtNode(loc, cond, body, elseBody) =>
-                build(body)
-                if (elseBody != null)
-                    build(elseBody)
+                val condQuad = build(list, cond)
+                val labelTrue = QLabel()
+                val labelFalse = QLabel()
+                val labelEnd = QLabel()
+                list += createQuad(QCJmp(open(condQuad), labelTrue, labelFalse))
+                list += labelTrue
+                list ++= build(body)
+                list += createQuad(QJmp(labelEnd))
+                list += labelFalse
+                if (elseBody != null) {
+                    list ++= build(elseBody)
+                    list += createQuad(QJmp(labelEnd))
+                }
+                list += labelEnd
             case ForStmtNode(loc, id, initExpr, endExpr, step, body) =>
             case WhileStmtNode(loc, cond, body) =>
                 build(body)
@@ -44,11 +58,10 @@ object CFGTransformer {
             case ContinueStmtNode(loc) =>
             case _ =>
         }
-
-        basicBlock
+        list
     }
 
-    def build(basicBlock: BasicBlock, expr: ExpNode): Quad = {
+    def build(basicBlock: mutable.MutableList[Quad], expr: ExpNode): Quad = {
         expr match {
             case LocationExprNode(loc, locationNode) =>
                 locationNode match {
@@ -71,7 +84,7 @@ object CFGTransformer {
                 val q1 = build(basicBlock, lhs)
                 val q2 = build(basicBlock, rhs)
                 val t = createQuad(QAdd(TempVarOperand(), open(q1), open(q2)))
-                basicBlock.add(t)
+                basicBlock.+=(t)
                 return t
             case UnaryExprNode(loc, op, exp) =>
             case CondExprNode(loc, cond, branch1, branch2) =>
@@ -90,7 +103,7 @@ object CFGTransformer {
     }
 
     private def createQuad(quad: Quad): Quad = {
-        println(quad)
+//        println(quad)
         quad
     }
 

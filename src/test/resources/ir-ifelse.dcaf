@@ -1,0 +1,12 @@
+int main() {
+    boolean c, d;
+    int x, y, z;
+
+    if (d) {
+        x = y + z;
+    } else {
+        x = y - z;
+    }
+
+    return z;
+}

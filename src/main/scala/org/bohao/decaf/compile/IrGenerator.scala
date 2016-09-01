@@ -201,6 +201,22 @@ object IrGenerator {
                         return Q1(temp)
                 }
             case CondExprNode(loc, cond, branch1, branch2) =>
+                val condQuad = build(basicBlock, cond)
+                val labelTrue = QLabel()
+                val labelFalse = QLabel()
+                val labelEnd = QLabel()
+                var quad: Quad = null
+                val temp = TempVarOperand()
+                basicBlock += createQuad(QCJmp(open(condQuad), labelTrue, labelFalse))
+                basicBlock += labelTrue
+                quad = build(basicBlock, branch1)
+                basicBlock += createQuad(QAssign(temp, open(quad)))
+                basicBlock += createQuad(QJmp(labelEnd))
+                basicBlock += labelFalse
+                quad = build(basicBlock, branch2)
+                basicBlock += createQuad(QAssign(temp, open(quad)))
+                basicBlock += labelEnd
+                return Q1(temp)
         }
         null
     }

@@ -1,0 +1,10 @@
+int main() {
+    boolean c, d;
+    int x, y, z;
+
+        x = y > 10 ? 1 : 0;
+        y = 2 * z;
+
+    z = x;
+    return z;
+}

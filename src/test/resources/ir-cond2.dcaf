@@ -1,0 +1,8 @@
+int main() {
+    boolean c, d;
+    int x, y, z;
+
+    x = y > 10 ? 10 : (y > 9 ? 9 : (y > 8 ? 8 : 0));
+
+    return z;
+}

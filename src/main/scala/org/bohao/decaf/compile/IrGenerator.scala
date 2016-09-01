@@ -51,12 +51,38 @@ object IrGenerator {
                 }
                 list += labelEnd
             case ForStmtNode(loc, id, initExpr, endExpr, step, body) =>
+                val labelStart = QLabel()
+                val labelTrue = QLabel()
+                val labelFalse = QLabel()
+                var index = VarOperand(id)
+                val initQuad = build(list, initExpr)
+                list += createQuad(QAssign(index, open(initQuad)))
+                val endQuad = build(list, endExpr)
+                list += labelStart
+                val temp = TempVarOperand()
+                list += createQuad(QSub(temp, index, open(endQuad)))
+                list += createQuad(QCJmp(temp, labelTrue, labelFalse))
+                list += labelTrue
+                list ++= build(body)
+                if (step != null) {
+                    list += createQuad(QAdd(index, index, IntOperand(step.value.get)))
+                }
+                list += createQuad(QJmp(labelStart))
+                list += labelFalse
             case WhileStmtNode(loc, cond, body) =>
-                build(body)
+                val labelStart = QLabel()
+                val labelTrue = QLabel()
+                val labelFalse = QLabel()
+                list += labelStart
+                val condQuad = build(list, cond)
+                list += createQuad(QCJmp(open(condQuad), labelTrue, labelFalse))
+                list += labelTrue
+                list ++= build(body)
+                list += QJmp(labelStart)
+                list += labelFalse
             case ReturnStmtNode(loc, value) =>
             case BreakStmtNode(loc) =>
             case ContinueStmtNode(loc) =>
-            case _ =>
         }
         list
     }

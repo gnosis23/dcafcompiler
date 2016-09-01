@@ -77,3 +77,7 @@ object QLabel {
         QLabel("L" + id)
     }
 }
+
+object QRet0 extends Quad
+
+case class QRet1(src: Operand) extends Quad

@@ -86,9 +86,16 @@ object IrGenerator {
                 list += QJmp(labelStart)
                 list += labelFalse
                 return list
-            case ReturnStmtNode(loc, value) => null
-            case BreakStmtNode(loc) => null
-            case ContinueStmtNode(loc) => null
+            case ReturnStmtNode(loc, value) =>
+                if (value == null) {
+                    list += QRet0
+                } else {
+                    val quad = build(list, value)
+                    list += QRet1(open(quad))
+                }
+                return list
+            case BreakStmtNode(loc) => ???
+            case ContinueStmtNode(loc) => ???
         }
     }
 

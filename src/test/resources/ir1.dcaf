@@ -11,5 +11,5 @@ int main() {
         z = 1;
     }
     z = x;
-    return z;
+    return z + 1;
 }

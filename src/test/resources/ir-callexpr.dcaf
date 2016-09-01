@@ -1,0 +1,10 @@
+callout fun;
+
+int main() {
+    boolean c, d;
+    int x, y, z;
+
+    x = 1 + fun(x + 1, 1 + 1 + 1, "hehe");
+
+    return z;
+}

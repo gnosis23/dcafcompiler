@@ -34,7 +34,10 @@ object IrGenerator {
                 val q2 = build(list, expr)
                 val t = createQuad(QAssign(q1, open(q2)))
                 list += t
+                return list
             case MethodCallStmtNode(loc, call) =>
+                build(list, call)
+                return list
             case IfStmtNode(loc, cond, body, elseBody) =>
                 val condQuad = build(list, cond)
                 val labelTrue = QLabel()
@@ -50,6 +53,7 @@ object IrGenerator {
                     list += createQuad(QJmp(labelEnd))
                 }
                 list += labelEnd
+                return list
             case ForStmtNode(loc, id, initExpr, endExpr, step, body) =>
                 val labelStart = QLabel()
                 val labelTrue = QLabel()
@@ -69,6 +73,7 @@ object IrGenerator {
                 }
                 list += createQuad(QJmp(labelStart))
                 list += labelFalse
+                return list
             case WhileStmtNode(loc, cond, body) =>
                 val labelStart = QLabel()
                 val labelTrue = QLabel()
@@ -80,23 +85,19 @@ object IrGenerator {
                 list ++= build(body)
                 list += QJmp(labelStart)
                 list += labelFalse
-            case ReturnStmtNode(loc, value) =>
-            case BreakStmtNode(loc) =>
-            case ContinueStmtNode(loc) =>
+                return list
+            case ReturnStmtNode(loc, value) => null
+            case BreakStmtNode(loc) => null
+            case ContinueStmtNode(loc) => null
         }
-        list
     }
 
     def build(basicBlock: mutable.MutableList[Quad], expr: ExpNode): Quad = {
         expr match {
             case LocationExprNode(loc, locationNode) =>
-                locationNode match {
-                    case VarLocationExprNode(_, variable) =>
-                        return Q1(VarOperand(variable.name))
-                    case VarArrayLocationExprNode(_, variable, exp) =>
-                }
+                return Q1(build(basicBlock, locationNode))
             case MethodCallExprNode(loc, call) =>
-                // TODO: func
+                return build(basicBlock, call)
             case LiteralExprNode(loc, value) =>
                 value match {
                     case e @ IntLiteralNode(_, text) =>
@@ -218,7 +219,45 @@ object IrGenerator {
                 basicBlock += labelEnd
                 return Q1(temp)
         }
-        null
+        throw new Error("build expression error")
+    }
+
+    def build(basicBlock: mutable.MutableList[Quad], call: MethodCallNode): Quad = {
+        call match {
+            case ExpArgsMethodCallNode(_, name, arguments) =>
+                val quads: List[TempVarOperand] = arguments.map(p => {
+                    val src = open(build(basicBlock, p))
+                    val temp = TempVarOperand()
+                    basicBlock += QAssign(temp, src)
+                    temp
+                }).toList
+                quads.foreach(p => {
+                    basicBlock += QParam(p)
+                })
+                val temp = TempVarOperand()
+                basicBlock += QCall(temp, VarOperand(name.id.name),
+                    IntOperand(quads.length))
+                return  Q1(temp)
+            case CalloutArgsMethodCallNode(_, name, arguments) =>
+                val quads: List[TempVarOperand] = arguments.map(p => {
+                    val src = p match {
+                        case ExprArgNode(_, exp) =>
+                            open(build(basicBlock, exp))
+                        case StringArgNode(_, str) =>
+                            StrOperand(str.str)
+                    }
+                    val temp = TempVarOperand()
+                    basicBlock += QAssign(temp, src)
+                    temp
+                }).toList
+                quads.foreach(p => {
+                    basicBlock += QParam(p)
+                })
+                val temp = TempVarOperand()
+                basicBlock += QCall(temp, VarOperand(name.id.name),
+                    IntOperand(quads.length))
+                return Q1(temp)
+        }
     }
 
     def build(quads: mutable.MutableList[Quad], locationNode: LocationNode): Lhs = {
@@ -232,7 +271,6 @@ object IrGenerator {
     }
 
     private def createQuad(quad: Quad): Quad = {
-//        println(quad)
         quad
     }
 
@@ -253,6 +291,8 @@ object IrGenerator {
             case QNeg(dest, src) => dest
             case QBang(dest, src) => dest
             case QArrayLen(dest, src) => dest
+            case QCall(dest, src, src2) => dest
+            case QParam(dest) => dest
             case _ => throw new Error("unsupported expression return quad type" + quad)
         }
     }

@@ -61,6 +61,10 @@ case class QJmp(dest: QLabel) extends Quad {
 
 }
 
+case class QCall(dest: Lhs, name: Operand, count: IntOperand) extends Quad
+
+case class QParam(dest: Lhs) extends Quad
+
 case class QLabel(val id: String) extends Quad {
 
 }

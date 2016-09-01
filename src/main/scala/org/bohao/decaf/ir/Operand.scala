@@ -26,6 +26,8 @@ case class IntOperand(value: Int) extends Operand {
 
 }
 
+case class StrOperand(value: String) extends Operand
+
 case class TempVarOperand(id: Int) extends Lhs {
 
 }

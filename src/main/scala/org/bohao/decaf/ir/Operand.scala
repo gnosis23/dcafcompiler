@@ -40,6 +40,14 @@ object TempVarOperand {
     }
 }
 
-case class BasicBlockOperand(block: BasicBlock) extends Operand {
+case class BasicBlockOperand(block: BasicBlock) extends Operand
 
+case class MemoryPointerOperand(id: Int) extends Lhs
+
+object MemoryPointerOperand {
+    var id = 0
+    def apply(): MemoryPointerOperand = {
+        id += 1
+        MemoryPointerOperand(id)
+    }
 }

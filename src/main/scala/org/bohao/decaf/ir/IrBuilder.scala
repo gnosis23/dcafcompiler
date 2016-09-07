@@ -49,7 +49,11 @@ class IrBuilder {
         insertBlock.addInst(Ret(value))
     }
 
-    def createCall(func: IFunction, args: List[Operand]): Unit = {
+    def createRet(): Quad2 = {
+        insertBlock.addInst(Ret0)
+    }
+
+    def createCall(func: IFunction, args: List[Operand]): Quad2 = {
         insertBlock.addInst(Call(TempVarOperand(), func, args))
     }
 }

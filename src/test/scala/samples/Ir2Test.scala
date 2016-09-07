@@ -53,5 +53,11 @@ class Ir2Test extends FunSpec {
                 FunctionType(INT64, List()))
         }
 
+        it("simple1") {
+            val path = getClass.getClassLoader.getResource("ir2-simple1.dcaf").toURI.getPath
+            val ir = Compiler.asm2(path)
+
+            ir.dump()
+        }
     }
 }

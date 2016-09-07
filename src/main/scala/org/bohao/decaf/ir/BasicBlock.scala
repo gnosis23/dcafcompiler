@@ -9,7 +9,7 @@ class BasicBlock(var name: String, var parent: IFunction) {
     var insts = mutable.LinkedList[Quad2]()
 
     def addInst(quad: Quad2): Quad2 = {
-        insts :+ quad
+        insts = insts :+ quad
         quad
     }
 }

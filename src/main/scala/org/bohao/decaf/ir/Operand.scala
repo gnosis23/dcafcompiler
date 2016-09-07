@@ -18,6 +18,9 @@ case class VarOperand(name: String) extends Lhs {
     var symbol: ISymbol = null
 }
 
+// temporary class for irbuilder without local variable
+case class ParamOperand(name: String) extends Lhs
+
 case class ArrayOperand(name: String, index: Operand) extends Lhs {
 
 }

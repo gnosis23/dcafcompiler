@@ -1,0 +1,12 @@
+int foo(int a, int b) {
+    return (a*a) + (2*a*b) + (b*b);
+}
+
+int bar(int a) {
+    return foo(a, 4) + bar(31337);
+}
+
+int main() {
+    int x, y, z;
+    return 1;
+}

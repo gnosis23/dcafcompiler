@@ -4,7 +4,7 @@ import java.io._
 
 import org.antlr.v4.runtime._
 import org.bohao.decaf.ast.ProgramNode
-import org.bohao.decaf.ir.{Ir, BasicBlock}
+import org.bohao.decaf.ir.{Ir2, Ir, BasicBlock}
 import org.bohao.decaf.parser.{UnderlineListener, ParserParser, ParserLexer}
 import org.bohao.decaf.util.CLI
 
@@ -157,5 +157,19 @@ object Compiler {
 
         val block = IrGenerator.build(ast)
         block
+    }
+
+    def asm2(fileName: String): Ir2 = {
+        var ast = parse(fileName)
+        if (ast != null) {
+            val errorhandler = new ErrorHandler
+            ast = SemanticChecker.check(ast, errorhandler)
+            if (errorhandler.hasError) {
+                errorhandler.errorMsgs.foreach(p => Console.err.println(p))
+                return null
+            }
+        }
+
+        IrGenerator2.build(ast)
     }
 }

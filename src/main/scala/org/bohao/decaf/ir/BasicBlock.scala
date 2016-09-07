@@ -5,7 +5,7 @@ import scala.collection.mutable
 /**
   * Created by bohao on 2016/8/31.
   */
-class BasicBlock(var name: String, var parent: Function) {
+class BasicBlock(var name: String, var parent: IFunction) {
     var insts = mutable.LinkedList[Quad2]()
 
     def addInst(quad: Quad2): Quad2 = {
@@ -17,7 +17,7 @@ class BasicBlock(var name: String, var parent: Function) {
 object BasicBlock {
     private val blockNames = mutable.Map[String, Int]()
 
-    def create(name: String, func: Function): BasicBlock = {
+    def create(name: String, func: IFunction): BasicBlock = {
         var id = 0
         if (blockNames.get(name).isDefined) {
             id = blockNames.get(name).get + 1

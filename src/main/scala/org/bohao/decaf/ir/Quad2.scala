@@ -26,4 +26,4 @@ case class ICmp(dest: Lhs, src1: Operand) extends Quad2
 
 case class Ret(value: Operand) extends Quad2
 
-case class Call(retValue: Lhs, func: Function, args: List[Operand]) extends Quad2
+case class Call(retValue: Lhs, func: IFunction, args: List[Operand]) extends Quad2

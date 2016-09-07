@@ -1,0 +1,14 @@
+void f1(int a) {}
+
+int f2(boolean a) {
+    return 0;
+}
+
+boolean f3(int a, boolean b, int c) {
+    return false;
+}
+
+int main() {
+    int x, y, z;
+    return z + 1;
+}

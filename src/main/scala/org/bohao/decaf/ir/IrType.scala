@@ -5,5 +5,5 @@ package org.bohao.decaf.ir
   */
 object IrType extends Enumeration {
     type IrType = Value
-    val INT32, INT64, STRING, CHAR = Value
+    val INT32, INT64, STRING, CHAR, VOID = Value
 }

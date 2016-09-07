@@ -34,6 +34,8 @@ class Ir2Test extends FunSpec {
             val path = getClass.getClassLoader.getResource("functypes.dcaf").toURI.getPath
             val ir = Compiler.asm2(path)
 
+            ir.dump()
+
             assert(ir.functions.get(0).name == "f1")
             assert(ir.functions.get(0).functionType ==
                 FunctionType(VOID, List(("a", INT64))))

@@ -26,6 +26,7 @@ class Ir2(var functions: List[IFunction]) {
         block.insts.foreach(inst =>
             println("  " + dump(inst))
         )
+        println("")
     }
 
     def dump(inst: Quad2): String = {

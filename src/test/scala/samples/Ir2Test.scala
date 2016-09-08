@@ -73,5 +73,12 @@ class Ir2Test extends FunSpec {
 
             ir.dump()
         }
+
+        it("while") {
+            val path = getClass.getClassLoader.getResource("ir2-while.dcaf").toURI.getPath
+            val ir = Compiler.asm2(path)
+
+            ir.dump()
+        }
     }
 }

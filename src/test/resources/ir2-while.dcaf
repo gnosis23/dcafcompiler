@@ -1,0 +1,17 @@
+
+int bar(int a, int b) {
+    a = 1;
+    while (a < 10) {
+        while (a < 100) {
+            a = a + 1;
+        }
+    }
+    b = a;
+    return b;
+}
+
+
+int main() {
+    int x, y, z;
+    return 1;
+}

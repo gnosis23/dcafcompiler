@@ -142,6 +142,25 @@ object IrGenerator2 {
                 builder.setInsertPoint(endBlock)
 
             case WhileStmtNode(loc, cond, body) =>
+                val condBlock = BasicBlock.create("cond", currentFunction)
+                val thenBlock = BasicBlock.create("while-body")
+                val endBlock = BasicBlock.create("end-while")
+
+                // init
+                builder.createBr(BasicBlockOperand(condBlock))
+
+                builder.setInsertPoint(condBlock)
+                val quad0 = codegen(cond)
+                builder.createCondBr(target(quad0), BasicBlockOperand(thenBlock),
+                    BasicBlockOperand(endBlock))
+
+                currentFunction.addBlock(thenBlock)
+                builder.setInsertPoint(thenBlock)
+                codegen(body)
+                builder.createBr(BasicBlockOperand(condBlock))
+
+                currentFunction.addBlock(endBlock)
+                builder.setInsertPoint(endBlock)
             case ReturnStmtNode(_, value) =>
                 if (value == null) {
                     builder.createRet()

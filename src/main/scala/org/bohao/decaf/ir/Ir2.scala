@@ -17,7 +17,7 @@ class Ir2(var functions: List[IFunction]) {
                 dump(block)
             })
 
-            println("}")
+            println("}\n")
         })
     }
 
@@ -71,6 +71,7 @@ class Ir2(var functions: List[IFunction]) {
             case BasicBlockOperand(block) => s"#${block.name}"
             case TempVarOperand(id) => s"%t$id"
             case ParamOperand(name) => "%" + name
+            case VarOperand(v) => "%" + v
             case _ => op.toString
         }
     }

@@ -109,6 +109,38 @@ object IrGenerator2 {
                     builder.setInsertPoint(mergeBlock)
                 }
             case ForStmtNode(loc, id, initExpr, endExpr, step, body) =>
+                val condBlock = BasicBlock.create("cond", currentFunction)
+                val thenBlock = BasicBlock.create("loop")
+                val endBlock = BasicBlock.create("endloop")
+                val index = VarOperand(id)
+
+                // init
+                val initValue = codegen(initExpr)
+                namedValues = (id, index) :: namedValues
+                builder.createAssign(index, target(initValue))
+                builder.createBr(BasicBlockOperand(condBlock))
+
+                builder.setInsertPoint(condBlock)
+                val quad0 = codegen(endExpr)
+                val t0 = builder.createITestle(index, target(quad0))
+                builder.createCondBr(target(t0), BasicBlockOperand(thenBlock),
+                    BasicBlockOperand(endBlock))
+
+                currentFunction.addBlock(thenBlock)
+                builder.setInsertPoint(thenBlock)
+                codegen(body)
+                if (step != null) {
+                    val t2 = builder.createIAdd(index, IntOperand(step.value.get))
+                    builder.createAssign(index, target(t2))
+                } else {
+                    val t2 = builder.createIAdd(index, IntOperand(1))
+                    builder.createAssign(index, target(t2))
+                }
+                builder.createBr(BasicBlockOperand(condBlock))
+
+                currentFunction.addBlock(endBlock)
+                builder.setInsertPoint(endBlock)
+
             case WhileStmtNode(loc, cond, body) =>
             case ReturnStmtNode(_, value) =>
                 if (value == null) {

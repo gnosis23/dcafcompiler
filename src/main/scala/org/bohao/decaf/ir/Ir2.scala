@@ -31,7 +31,9 @@ class Ir2(var functions: List[IFunction]) {
     def dump(inst: Quad2): String = {
         inst match {
             case Br(block) =>
+                return s"br ${s(block)}"
             case CondBr(cond, thenBody, elseBody) =>
+                return s"br ${s(cond)} ${s(thenBody)}, ${s(elseBody)}"
             case Store(mem, startVal) =>
             case Load(dest, mem) =>
             case IAdd(dest, src1, src2) =>
@@ -40,15 +42,26 @@ class Ir2(var functions: List[IFunction]) {
                 return s"${s(dest)} = isub ${s(src1)}, ${s(src2)}"
             case IMul(dest, src1, src2) =>
                 return s"${s(dest)} = imul ${s(src1)}, ${s(src2)}"
+            case ITestg(dest, src1, src2) =>
+                return s"${s(dest)} = itestg ${s(src1)}, ${s(src2)}"
+            case ITestge(dest, src1, src2) =>
+                return s"${s(dest)} = itestge ${s(src1)}, ${s(src2)}"
+            case ITestl(dest, src1, src2) =>
+                return s"${s(dest)} = itestl ${s(src1)}, ${s(src2)}"
+            case ITestle(dest, src1, src2) =>
+                return s"${s(dest)} = itestle ${s(src1)}, ${s(src2)}"
             case ICmp(dest, src1) =>
+                return s"${s(dest)} = icmp ${s(src1)}"
             case Ret(value) => return s"Ret ${s(value)}"
             case Ret0 => return s"Ret"
             case Call(retValue, func, args) =>
                 val argString = args.foldLeft("")((msg, x) => s"$msg [${s(x)}] ")
                 return s"${s(retValue)} = call @${func.name}($argString)"
+            case Assign(dest, value) =>
+                return s"${s(dest)} = ${s(value)}"
             case _ =>
         }
-        ""
+        inst.toString
     }
 
     private def s(op: Operand): String = {

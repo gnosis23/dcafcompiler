@@ -15,6 +15,7 @@ import scala.collection.mutable.ListBuffer
 object IrGenerator2 {
     var ir: Ir2 = null
     var functions: Map[String, IFunction] = Map()
+    var currentFunction: IFunction = null
     val builder = new IrBuilder
     var namedValues = List[(String, Lhs)]()
 
@@ -34,6 +35,7 @@ object IrGenerator2 {
     def codegen(method: MethodDeclNode): Unit = {
         // FIXME: failed if duplicate name
         val function = functions.get(method.name).get
+        currentFunction = function
 
         val entryBlock = BasicBlock.create("entry", function)
         builder.setInsertPoint(entryBlock)
@@ -58,9 +60,54 @@ object IrGenerator2 {
 
     def codegen(stmt: StmtNode): Unit = {
         stmt match {
-            case AssignStmtNode(loc, locationNode, op, expr) =>
+            case AssignStmtNode(_, locationNode, op, expr) =>
+                locationNode match {
+                    case VarLocationExprNode(loc, variable) =>
+                        val src = namedValues.find(n => n._1 == variable.name).get._2
+                        val value = codegen(expr)
+                        op.op match {
+                            case "=" => builder.createAssign(src, target(value))
+                        }
+                    case VarArrayLocationExprNode(loc, variable, exp) =>
+
+                }
             case MethodCallStmtNode(loc, call) =>
-            case IfStmtNode(loc, cond, body, elseBody) =>
+            case IfStmtNode(_, cond, body, elseBody) =>
+                if (elseBody != null) {
+                    val thenBlock = BasicBlock.create("then", currentFunction)
+                    val elseBlock = BasicBlock.create("else")
+                    val mergeBlock = BasicBlock.create("ifcont")
+
+                    val condValue = codegen(cond)
+                    builder.createCondBr(target(condValue), BasicBlockOperand(thenBlock),
+                        BasicBlockOperand(elseBlock))
+
+                    builder.setInsertPoint(thenBlock)
+                    codegen(body)
+                    builder.createBr(BasicBlockOperand(mergeBlock))
+
+                    currentFunction.addBlock(elseBlock)
+                    builder.setInsertPoint(elseBlock)
+                    codegen(elseBody)
+                    builder.createBr(BasicBlockOperand(mergeBlock))
+
+                    currentFunction.addBlock(mergeBlock)
+                    builder.setInsertPoint(mergeBlock)
+                } else {
+                    val thenBlock = BasicBlock.create("then", currentFunction)
+                    val mergeBlock = BasicBlock.create("ifcont")
+
+                    val condValue = codegen(cond)
+                    builder.createCondBr(target(condValue), BasicBlockOperand(thenBlock),
+                        BasicBlockOperand(mergeBlock))
+
+                    builder.setInsertPoint(thenBlock)
+                    codegen(body)
+                    builder.createBr(BasicBlockOperand(mergeBlock))
+
+                    currentFunction.addBlock(mergeBlock)
+                    builder.setInsertPoint(mergeBlock)
+                }
             case ForStmtNode(loc, id, initExpr, endExpr, step, body) =>
             case WhileStmtNode(loc, cond, body) =>
             case ReturnStmtNode(_, value) =>
@@ -115,6 +162,18 @@ object IrGenerator2 {
                             case _ => throw new Error(s"unimplemented op $op")
                         }
                     case RelOpNode(_, op) =>
+                        val lquad = codegen(lhs)
+                        val rquad = codegen(rhs)
+                        op match {
+                            case ">" =>
+                                return builder.createITestg(target(lquad), target(rquad))
+                            case ">=" =>
+                                return builder.createITestge(target(lquad), target(rquad))
+                            case "<" =>
+                                return builder.createITestl(target(lquad), target(rquad))
+                            case "<=" =>
+                                return builder.createITestle(target(lquad), target(rquad))
+                        }
                     case EqOpNode(_, op) =>
                     case CondOpNode(_, op) =>
                     case _ =>
@@ -157,6 +216,10 @@ object IrGenerator2 {
             case IAdd(dest, src1, src2) => dest
             case ISub(dest, src1, src2) => dest
             case IMul(dest, src1, src2) => dest
+            case ITestg(dest, src1, src2) => dest
+            case ITestge(dest, src1, src2) => dest
+            case ITestl(dest, src1, src2) => dest
+            case ITestle(dest, src1, src2) => dest
             case ICmp(dest, src1) => dest
             case T1(dest) => dest
 //            case Ret(value) =>

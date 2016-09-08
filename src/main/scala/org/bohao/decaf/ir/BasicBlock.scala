@@ -30,4 +30,17 @@ object BasicBlock {
 
         block
     }
+
+    def create(name: String): BasicBlock = {
+        var id = 0
+        if (blockNames.get(name).isDefined) {
+            id = blockNames.get(name).get + 1
+        }
+        blockNames.update(name, id)
+
+        val name0 = s"$name$id"
+        val block = new BasicBlock(name0, null)
+
+        block
+    }
 }

@@ -59,5 +59,12 @@ class Ir2Test extends FunSpec {
 
             ir.dump()
         }
+
+        it("if-then-else") {
+            val path = getClass.getClassLoader.getResource("ir2-if-then-else.dcaf").toURI.getPath
+            val ir = Compiler.asm2(path)
+
+            ir.dump()
+        }
     }
 }

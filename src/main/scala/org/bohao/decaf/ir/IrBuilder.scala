@@ -41,6 +41,22 @@ class IrBuilder {
         insertBlock.addInst(IMul(TempVarOperand(), value1, value2))
     }
 
+    def createITestl(value1: Operand, value2: Operand): Quad2 = {
+        insertBlock.addInst(ITestl(TempVarOperand(), value1, value2))
+    }
+
+    def createITestle(value1: Operand, value2: Operand): Quad2 = {
+        insertBlock.addInst(ITestle(TempVarOperand(), value1, value2))
+    }
+
+    def createITestg(value1: Operand, value2: Operand): Quad2 = {
+        insertBlock.addInst(ITestg(TempVarOperand(), value1, value2))
+    }
+
+    def createITestge(value1: Operand, value2: Operand): Quad2 = {
+        insertBlock.addInst(ITestge(TempVarOperand(), value1, value2))
+    }
+
     def createICmp(value: Operand): Quad2 = {
         insertBlock.addInst(ICmp(TempVarOperand(), value))
     }
@@ -55,5 +71,9 @@ class IrBuilder {
 
     def createCall(func: IFunction, args: List[Operand]): Quad2 = {
         insertBlock.addInst(Call(TempVarOperand(), func, args))
+    }
+
+    def createAssign(dest: Lhs, value: Operand): Quad2 = {
+        insertBlock.addInst(Assign(dest, value))
     }
 }

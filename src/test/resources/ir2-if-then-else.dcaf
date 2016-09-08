@@ -1,0 +1,43 @@
+int foo(int a, int b) {
+    if (a > 1) {
+        b = 1;
+    } else {
+        b = 0;
+    }
+    return b;
+}
+
+int bar(int a, int b) {
+    if (a > 1) {
+        if (a > 10) {
+            if (a > 100) {
+                b = 100;
+            } else {
+                b = 90;
+            }
+        } else {
+            if (a > 50) {
+                b = 50;
+            } else {
+                b = 40;
+            }
+        }
+    } else {
+        b = 0;
+    }
+    return b;
+}
+
+int f3(int a) {
+    if (a > 100) {
+        a = 0;
+        a = a + 1;
+    }
+    a = 10;
+    return a;
+}
+
+int main() {
+    int x, y, z;
+    return 1;
+}

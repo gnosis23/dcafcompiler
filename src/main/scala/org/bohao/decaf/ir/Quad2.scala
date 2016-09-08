@@ -22,6 +22,15 @@ case class ISub(dest: Lhs, src1: Operand, src2: Operand) extends Quad2
 
 case class IMul(dest: Lhs, src1: Operand, src2: Operand) extends Quad2
 
+case class ITestl(dest: Lhs, src1: Operand, src2: Operand) extends Quad2
+
+case class ITestle(dest: Lhs, src1: Operand, src2: Operand) extends Quad2
+
+case class ITestg(dest: Lhs, src1: Operand, src2: Operand) extends Quad2
+
+case class ITestge(dest: Lhs, src1: Operand, src2: Operand) extends Quad2
+
+
 case class ICmp(dest: Lhs, src1: Operand) extends Quad2
 
 case class Ret(value: Operand) extends Quad2
@@ -31,3 +40,5 @@ object Ret0 extends Quad2
 case class Call(retValue: Lhs, func: IFunction, args: List[Operand]) extends Quad2
 
 case class T1(value: Operand) extends Quad2
+
+case class Assign(dest: Lhs, value: Operand) extends Quad2

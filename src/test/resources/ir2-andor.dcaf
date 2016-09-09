@@ -1,0 +1,14 @@
+int foo(int a, int b) {
+    if ((a > 1) && (a < b) || (b > 0)) {
+        b = 1;
+    } else {
+        b = 0;
+    }
+    return b;
+}
+
+
+int main() {
+    int x, y, z;
+    return 1;
+}

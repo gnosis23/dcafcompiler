@@ -94,5 +94,12 @@ class Ir2Test extends FunSpec {
 
             ir.dump()
         }
+
+        it("ir-andor") {
+            val path = getClass.getClassLoader.getResource("ir2-andor.dcaf").toURI.getPath
+            val ir = Compiler.asm2(path)
+
+            ir.dump()
+        }
     }
 }

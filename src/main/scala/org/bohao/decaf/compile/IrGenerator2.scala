@@ -337,7 +337,15 @@ object IrGenerator2 {
                                 return T1(temp)
                         }
                 }
-            case UnaryExprNode(loc, op, exp) =>
+            case UnaryExprNode(_, op, exp) =>
+                op match {
+                    case "!" =>
+                        val value = codegen(exp)
+                        return builder.createRev(TempVarOperand(), target(value))
+                    case "-" =>
+                        val value = codegen(exp)
+                        return builder.createNeg(TempVarOperand(), target(value))
+                }
             case CondExprNode(loc, cond, branch1, branch2) =>
         }
         throw new RuntimeException("unsupported expr: " + expr)
@@ -417,6 +425,8 @@ object IrGenerator2 {
 //            case Ret(value) =>
             case Call(retValue, func, args) => retValue
             case GetElement(dest, mem, index) => dest
+            case Neg(dest, _) => dest
+            case Rev(dest, _) => dest
             case _ => throw new Error("unsupported open quad return " + quad)
         }
     }

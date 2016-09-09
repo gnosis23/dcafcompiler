@@ -88,4 +88,12 @@ class IrBuilder {
     def createAssign(dest: Lhs, value: Operand): Quad2 = {
         insertBlock.addInst(Assign(dest, value))
     }
+
+    def createNeg(dest: Lhs, value: Operand): Quad2 = {
+        insertBlock.addInst(Neg(dest, value))
+    }
+
+    def createRev(dest: Lhs, value: Operand): Quad2 = {
+        insertBlock.addInst(Rev(dest, value))
+    }
 }

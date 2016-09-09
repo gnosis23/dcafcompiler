@@ -78,6 +78,10 @@ class Ir2(var functions: List[IFunction]) {
                 return s"alloc mem[${mem.varname},${mem.id}][${s(size)}]"
             case GetElement(dest, mem, index) =>
                 return s"${s(dest)} = GetElement ${s(mem)}[${s(index)}]"
+            case Neg(dest, src) =>
+                return s"${s(dest)} = Neg ${s(src)}"
+            case Rev(dest, src) =>
+                return s"${s(dest)} = Rev ${s(src)}"
             case _ =>
         }
         inst.toString

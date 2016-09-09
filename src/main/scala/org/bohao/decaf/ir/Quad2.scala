@@ -53,3 +53,7 @@ case class Call(retValue: Lhs, func: IFunction, args: List[Operand]) extends Qua
 case class T1(value: Operand) extends Quad2
 
 case class Assign(dest: Lhs, value: Operand) extends Quad2
+
+case class Neg(dest: Lhs, value: Operand) extends Quad2
+
+case class Rev(dest: Lhs, value: Operand) extends Quad2

@@ -247,6 +247,7 @@ object IrGenerator2 {
                         val argsOperand = arguments.map(x => target(codegen(x))).toList
                         return builder.createCall(currentFunction, argsOperand)
                     case CalloutArgsMethodCallNode(_, name, arguments) =>
+                        // TODO: callout
                 }
             case LiteralExprNode(_, v) =>
                 v match {
@@ -258,6 +259,7 @@ object IrGenerator2 {
                         return T1(IntOperand(if(value) 1 else 0))
                 }
             case IdExprNode(loc, id) =>
+                // TODO: @len
             case BinExprNode(_, op0, lhs, rhs) =>
                 op0 match {
                     case ArithOpNode(_, op) =>
@@ -346,7 +348,32 @@ object IrGenerator2 {
                         val value = codegen(exp)
                         return builder.createNeg(TempVarOperand(), target(value))
                 }
-            case CondExprNode(loc, cond, branch1, branch2) =>
+            case CondExprNode(_, cond, branch1, branch2) =>
+                val value = codegen(cond)
+                val temp = TempVarOperand()
+                val b1 = BasicBlock.create("ta")
+                val b2 = BasicBlock.create("tb")
+                val endblock = BasicBlock.create("tend")
+
+                builder.createAssign(temp, IntOperand(0))
+                builder.createCondBr(target(value), BasicBlockOperand(b1),
+                    BasicBlockOperand(b2))
+
+                currentFunction.addBlock(b1)
+                builder.setInsertPoint(b1)
+                var t0 = codegen(branch1)
+                builder.createAssign(temp, target(t0))
+                builder.createBr(BasicBlockOperand(endblock))
+
+                currentFunction.addBlock(b2)
+                builder.setInsertPoint(b2)
+                t0 = codegen(branch2)
+                builder.createAssign(temp, target(t0))
+                builder.createBr(BasicBlockOperand(endblock))
+
+                currentFunction.addBlock(endblock)
+                builder.setInsertPoint(endblock)
+                return T1(temp)
         }
         throw new RuntimeException("unsupported expr: " + expr)
         null

@@ -1,13 +1,12 @@
 package org.bohao.decaf.compile
 
 import org.bohao.decaf.ast._
-import org.bohao.decaf.ir.IrType.IrType
+import org.bohao.decaf.ir.IrType.{IrType, _}
 import org.bohao.decaf.ir._
-import org.bohao.decaf.ir.IrType._
-import org.bohao.decaf.types.{IType, IntType, VoidType, BoolType}
-import scala.collection.JavaConversions._
+import org.bohao.decaf.types.{BoolType, IType, IntType, VoidType}
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.JavaConversions._
+import scala.collection.mutable
 
 /**
   * Created by bohao on 2016/9/7.
@@ -18,6 +17,7 @@ object IrGenerator2 {
     var currentFunction: IFunction = null
     val builder = new IrBuilder
     var namedValues = List[(String, Lhs)]()
+    val blockStack = mutable.Stack[(BasicBlock, BasicBlock)]()
 
     def build(ast: ProgramNode): Ir2 = {
         ast.methods.foreach(m => {
@@ -72,6 +72,12 @@ object IrGenerator2 {
 
                 }
             case MethodCallStmtNode(loc, call) =>
+                call match {
+                    case ExpArgsMethodCallNode(_, name, arguments) =>
+                        val argsOperand = arguments.map(x => target(codegen(x))).toList
+                        builder.createCall(currentFunction, argsOperand)
+                    case CalloutArgsMethodCallNode(_, name, arguments) =>
+                }
             case IfStmtNode(_, cond, body, elseBody) =>
                 if (elseBody != null) {
                     val thenBlock = BasicBlock.create("then", currentFunction)
@@ -114,6 +120,8 @@ object IrGenerator2 {
                 val endBlock = BasicBlock.create("endloop")
                 val index = VarOperand(id)
 
+                pushStack(thenBlock, endBlock)
+
                 // init
                 val initValue = codegen(initExpr)
                 namedValues = (id, index) :: namedValues
@@ -141,10 +149,14 @@ object IrGenerator2 {
                 currentFunction.addBlock(endBlock)
                 builder.setInsertPoint(endBlock)
 
+                popStack()
+
             case WhileStmtNode(loc, cond, body) =>
                 val condBlock = BasicBlock.create("cond", currentFunction)
                 val thenBlock = BasicBlock.create("while-body")
                 val endBlock = BasicBlock.create("end-while")
+
+                pushStack(thenBlock, endBlock)
 
                 // init
                 builder.createBr(BasicBlockOperand(condBlock))
@@ -161,6 +173,9 @@ object IrGenerator2 {
 
                 currentFunction.addBlock(endBlock)
                 builder.setInsertPoint(endBlock)
+
+                popStack()
+
             case ReturnStmtNode(_, value) =>
                 if (value == null) {
                     builder.createRet()
@@ -169,7 +184,13 @@ object IrGenerator2 {
                     builder.createRet(target(quad))
                 }
             case BreakStmtNode(loc) =>
+                // get false block
+                val topBlock = blockStack.top._2
+                builder.createBr(BasicBlockOperand(topBlock))
             case ContinueStmtNode(loc) =>
+                // get true block
+                val topBlock = blockStack.top._1
+                builder.createBr(BasicBlockOperand(topBlock))
             case _ => throw new Error("stmt codegen")
         }
     }
@@ -187,7 +208,7 @@ object IrGenerator2 {
                 call match {
                     case ExpArgsMethodCallNode(_, name, arguments) =>
                         val argsOperand = arguments.map(x => target(codegen(x))).toList
-                        return builder.createCall(builder.getInsertBlock.parent, argsOperand)
+                        return builder.createCall(currentFunction, argsOperand)
                     case CalloutArgsMethodCallNode(_, name, arguments) =>
                 }
             case LiteralExprNode(_, v) =>
@@ -226,12 +247,18 @@ object IrGenerator2 {
                                 return builder.createITestle(target(lquad), target(rquad))
                         }
                     case EqOpNode(_, op) =>
+                        val lquad = codegen(lhs)
+                        val rquad = codegen(rhs)
+                        op match {
+                            case "==" =>
+                                return builder.createITesteq(target(lquad), target(rquad))
+                            case "!=" =>
+                                return builder.createITestneq(target(lquad), target(rquad))
+                        }
                     case CondOpNode(_, op) =>
-                    case _ =>
                 }
             case UnaryExprNode(loc, op, exp) =>
             case CondExprNode(loc, cond, branch1, branch2) =>
-            case _ =>
         }
         throw new RuntimeException("unsupported expr: " + expr)
         null
@@ -259,6 +286,14 @@ object IrGenerator2 {
         }
     }
 
+    private def pushStack(blockTrue: BasicBlock, blockFalse: BasicBlock): Unit = {
+        blockStack.push((blockTrue, blockFalse))
+    }
+
+    private def popStack(): Unit = {
+        blockStack.pop()
+    }
+
     private def target(quad: Quad2): Operand = {
         quad match {
             case Br(block) => block
@@ -267,6 +302,8 @@ object IrGenerator2 {
             case IAdd(dest, src1, src2) => dest
             case ISub(dest, src1, src2) => dest
             case IMul(dest, src1, src2) => dest
+            case ITesteq(dest, src1, src2) => dest
+            case ITestneq(dest, src1, src2) => dest
             case ITestg(dest, src1, src2) => dest
             case ITestge(dest, src1, src2) => dest
             case ITestl(dest, src1, src2) => dest

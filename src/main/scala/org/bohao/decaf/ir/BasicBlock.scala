@@ -6,10 +6,21 @@ import scala.collection.mutable
   * Created by bohao on 2016/8/31.
   */
 class BasicBlock(var name: String, var parent: IFunction) {
+    var hasExit = false
     var insts = mutable.LinkedList[Quad2]()
 
     def addInst(quad: Quad2): Quad2 = {
-        insts = insts :+ quad
+        // HACK: ignore rest instructions if break/continue/return encountered
+        if (!hasExit) {
+            quad match {
+                case Br(block) => hasExit = true
+                case CondBr(cond, thenBody, elseBody) => hasExit = true
+                case Ret(value) => hasExit = true
+                case Ret0 => hasExit = true
+                case _ =>
+            }
+            insts = insts :+ quad
+        }
         quad
     }
 }

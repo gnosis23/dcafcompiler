@@ -43,6 +43,10 @@ class Ir2(var functions: List[IFunction]) {
                 return s"${s(dest)} = isub ${s(src1)}, ${s(src2)}"
             case IMul(dest, src1, src2) =>
                 return s"${s(dest)} = imul ${s(src1)}, ${s(src2)}"
+            case ITesteq(dest, src1, src2) =>
+                return s"${s(dest)} = i== ${s(src1)}, ${s(src2)}"
+            case ITestneq(dest, src1, src2) =>
+                return s"${s(dest)} = i!= ${s(src1)}, ${s(src2)}"
             case ITestg(dest, src1, src2) =>
                 return s"${s(dest)} = itestg ${s(src1)}, ${s(src2)}"
             case ITestge(dest, src1, src2) =>

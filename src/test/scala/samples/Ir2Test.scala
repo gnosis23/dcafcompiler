@@ -80,5 +80,12 @@ class Ir2Test extends FunSpec {
 
             ir.dump()
         }
+
+        it("break-continue-return") {
+            val path = getClass.getClassLoader.getResource("ir2-continue-break-return.dcaf").toURI.getPath
+            val ir = Compiler.asm2(path)
+
+            ir.dump()
+        }
     }
 }

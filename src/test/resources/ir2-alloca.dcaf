@@ -1,0 +1,25 @@
+int foo(int a, int b) {
+    int c;
+    c = 10;
+    for (i = 1, a*a, 100) {
+        b = b + i;
+    }
+    for (i = 1, c) {
+        b = b + i;
+    }
+    return b;
+}
+
+void bar(int a, int b) {
+    for (i = 1, a*a, 2) {
+        for (i = 1, b+b, 3) {
+            b = b + i * i;
+        }
+    }
+}
+
+
+int main() {
+    int x, y, z;
+    return 1;
+}

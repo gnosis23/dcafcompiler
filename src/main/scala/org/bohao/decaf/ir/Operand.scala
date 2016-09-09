@@ -45,12 +45,12 @@ object TempVarOperand {
 
 case class BasicBlockOperand(block: BasicBlock) extends Operand
 
-case class MemoryPointerOperand(id: Int) extends Lhs
+case class MemoryPointerOperand(varname: String, id: Int) extends Lhs
 
 object MemoryPointerOperand {
     var id = 0
-    def apply(): MemoryPointerOperand = {
+    def apply(name: String): MemoryPointerOperand = {
         id += 1
-        MemoryPointerOperand(id)
+        MemoryPointerOperand(name, id)
     }
 }

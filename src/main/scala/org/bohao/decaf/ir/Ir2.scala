@@ -13,6 +13,12 @@ class Ir2(var functions: List[IFunction]) {
             })
             println(") {")
 
+            // dump allocas
+            f.allocas.foreach(alloc => {
+                println("  " + dump(alloc))
+            })
+
+            // dump control-block
             f.blocks.foreach(block => {
                 dump(block)
             })
@@ -36,7 +42,9 @@ class Ir2(var functions: List[IFunction]) {
             case CondBr(cond, thenBody, elseBody) =>
                 return s"br ${s(cond)} ${s(thenBody)}, ${s(elseBody)}"
             case Store(mem, startVal) =>
+                return s"${s(mem)} = store ${s(startVal)}"
             case Load(dest, mem) =>
+                return s"${s(dest)} = load ${s(mem)}"
             case IAdd(dest, src1, src2) =>
                 return s"${s(dest)} = iadd ${s(src1)}, ${s(src2)}"
             case ISub(dest, src1, src2) =>
@@ -64,6 +72,8 @@ class Ir2(var functions: List[IFunction]) {
                 return s"${s(retValue)} = call @${func.name}($argString)"
             case Assign(dest, value) =>
                 return s"${s(dest)} = ${s(value)}"
+            case Alloca(mem) =>
+                return s"alloc mem[${mem.varname},${mem.id}]"
             case _ =>
         }
         inst.toString
@@ -77,6 +87,7 @@ class Ir2(var functions: List[IFunction]) {
             case TempVarOperand(id) => s"%t$id"
             case ParamOperand(name) => "%" + name
             case VarOperand(v) => "%" + v
+            case MemoryPointerOperand(name, id) => s"mem[$name,$id]"
             case _ => op.toString
         }
     }

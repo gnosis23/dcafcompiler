@@ -16,13 +16,16 @@ object IrGenerator2 {
     var functions: Map[String, IFunction] = Map()
     var currentFunction: IFunction = null
     val builder = new IrBuilder
-    var namedValues = List[(String, Lhs)]()
+    var namedValues = List[(String, MemoryPointerOperand)]()
     val blockStack = mutable.Stack[(BasicBlock, BasicBlock)]()
 
     def build(ast: ProgramNode): Ir2 = {
         ast.methods.foreach(m => {
             functions += parsePrototype(m)
         })
+
+        // TODO: Global variables
+        namedValues = Nil
 
         ast.methods.foreach(m => {
             codegen(m)
@@ -40,11 +43,12 @@ object IrGenerator2 {
         val entryBlock = BasicBlock.create("entry", function)
         builder.setInsertPoint(entryBlock)
 
-        // TODO: Global variables
         val oldValues = namedValues
-        namedValues = Nil
+
+        // store parameters to the stack
         method.params.foreach(p => {
-            namedValues = (p.variable, ParamOperand(p.variable)) :: namedValues
+            val address = alloc(p.variable)
+            builder.createStore(ParamOperand(p.variable), address)
         })
 
         codegen(method.block)
@@ -53,9 +57,22 @@ object IrGenerator2 {
     }
 
     def codegen(block: BlockNode): Unit = {
+        val oldValues = namedValues
+
+        block.decls.foreach(field => {
+            // all cast to int
+            field.names.foreach {
+                case VarNameNode(_, name) =>
+                    namedValues = (name, alloc(name)) :: namedValues
+                case ArrayNameNode(_, name, size) =>
+            }
+        })
+
         block.Stmts.foreach(s => {
             codegen(s)
         })
+
+        namedValues = oldValues
     }
 
     def codegen(stmt: StmtNode): Unit = {
@@ -63,10 +80,10 @@ object IrGenerator2 {
             case AssignStmtNode(_, locationNode, op, expr) =>
                 locationNode match {
                     case VarLocationExprNode(loc, variable) =>
-                        val src = namedValues.find(n => n._1 == variable.name).get._2
+                        val src = variableAddress(variable.name)
                         val value = codegen(expr)
                         op.op match {
-                            case "=" => builder.createAssign(src, target(value))
+                            case "=" => builder.createStore(target(value), src)
                         }
                     case VarArrayLocationExprNode(loc, variable, exp) =>
 
@@ -118,19 +135,22 @@ object IrGenerator2 {
                 val condBlock = BasicBlock.create("cond", currentFunction)
                 val thenBlock = BasicBlock.create("loop")
                 val endBlock = BasicBlock.create("endloop")
-                val index = VarOperand(id)
 
+                val oldNamedValues = namedValues
                 pushStack(thenBlock, endBlock)
+
+                // alloc memory
+                val indexAddress = alloc(id)
 
                 // init
                 val initValue = codegen(initExpr)
-                namedValues = (id, index) :: namedValues
-                builder.createAssign(index, target(initValue))
+                builder.createStore(target(initValue), indexAddress)
                 builder.createBr(BasicBlockOperand(condBlock))
 
                 builder.setInsertPoint(condBlock)
                 val quad0 = codegen(endExpr)
-                val t0 = builder.createITestle(index, target(quad0))
+                val a1 = builder.createLoad(indexAddress)
+                val t0 = builder.createITestle(target(a1), target(quad0))
                 builder.createCondBr(target(t0), BasicBlockOperand(thenBlock),
                     BasicBlockOperand(endBlock))
 
@@ -138,11 +158,13 @@ object IrGenerator2 {
                 builder.setInsertPoint(thenBlock)
                 codegen(body)
                 if (step != null) {
-                    val t2 = builder.createIAdd(index, IntOperand(step.value.get))
-                    builder.createAssign(index, target(t2))
+                    val a2 = builder.createLoad(indexAddress)
+                    val t2 = builder.createIAdd(target(a2), IntOperand(step.value.get))
+                    builder.createStore(target(t2), indexAddress)
                 } else {
-                    val t2 = builder.createIAdd(index, IntOperand(1))
-                    builder.createAssign(index, target(t2))
+                    val a2 = builder.createLoad(indexAddress)
+                    val t2 = builder.createIAdd(target(a2), IntOperand(1))
+                    builder.createStore(target(t2), indexAddress)
                 }
                 builder.createBr(BasicBlockOperand(condBlock))
 
@@ -150,6 +172,7 @@ object IrGenerator2 {
                 builder.setInsertPoint(endBlock)
 
                 popStack()
+                namedValues = oldNamedValues
 
             case WhileStmtNode(loc, cond, body) =>
                 val condBlock = BasicBlock.create("cond", currentFunction)
@@ -200,8 +223,8 @@ object IrGenerator2 {
             case LocationExprNode(_, locationNode) =>
                 locationNode match {
                     case VarLocationExprNode(loc, variable) =>
-                        val src = namedValues.find(n => n._1 == variable.name).get._2
-                        return T1(src)
+                        val address = variableAddress(variable.name)
+                        return builder.createLoad(address)
                     case VarArrayLocationExprNode(loc, variable, exp) =>
                 }
             case MethodCallExprNode(loc, call) =>
@@ -292,6 +315,23 @@ object IrGenerator2 {
 
     private def popStack(): Unit = {
         blockStack.pop()
+    }
+
+    /**
+      * add the alloca instruction to the function,
+      * put the memory address to the symbol tables: namedValues
+      * @param id variable name
+      * @return memory operand
+      */
+    private def alloc(id: String): MemoryPointerOperand = {
+        val quad = Alloca(MemoryPointerOperand(id))
+        currentFunction.addAlloca(quad)
+        namedValues = (id, quad.dest) :: namedValues
+        quad.dest
+    }
+
+    private def variableAddress(id: String): MemoryPointerOperand = {
+        namedValues.find(p => p._1 == id).get._2
     }
 
     private def target(quad: Quad2): Operand = {

@@ -18,6 +18,11 @@ case class Store(mem: MemoryPointerOperand, startVal: Operand) extends Quad2
 
 case class Load(dest: Lhs, mem: MemoryPointerOperand) extends Quad2
 
+case class AllocaArray(dest: MemoryPointerOperand, size: Operand) extends Quad2
+
+case class GetElement(dest: MemoryPointerOperand, mem: MemoryPointerOperand, index: Operand)
+    extends Quad2
+
 case class IAdd(dest: Lhs, src1: Operand, src2: Operand) extends Quad2
 
 case class ISub(dest: Lhs, src1: Operand, src2: Operand) extends Quad2

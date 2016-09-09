@@ -43,6 +43,17 @@ object TempVarOperand {
     }
 }
 
+class TempArrayOperand(name: String, id0: Int)
+    extends MemoryPointerOperand(name, id0)
+
+object TempArrayOperand {
+    var id = 0
+    def apply(): TempArrayOperand = {
+        id += 1
+        new TempArrayOperand("pointer", id)
+    }
+}
+
 case class BasicBlockOperand(block: BasicBlock) extends Operand
 
 case class MemoryPointerOperand(varname: String, id: Int) extends Lhs

@@ -18,8 +18,20 @@ void bar(int a, int b) {
     }
 }
 
+void f3(int a) {
+    int i;
+    i = 1;
+    while(i < 10) {
+        int j;
+        j = i;
+        i = i + j;
+    }
+}
 
 int main() {
-    int x, y, z;
+    int x, y, z[5];
+    boolean b[10];
+    z[1] = 110;
+    z[0] = x + z[1];
     return 1;
 }

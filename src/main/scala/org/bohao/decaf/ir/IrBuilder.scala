@@ -29,6 +29,10 @@ class IrBuilder {
         insertBlock.addInst(Load(TempVarOperand(), alloca))
     }
 
+    def createGetElement(mem: MemoryPointerOperand, size: Operand): Quad2 = {
+        insertBlock.addInst(GetElement(TempArrayOperand(), mem, size))
+    }
+
     def createIAdd(value1: Operand, value2: Operand): Quad2 = {
         insertBlock.addInst(IAdd(TempVarOperand(), value1, value2))
     }

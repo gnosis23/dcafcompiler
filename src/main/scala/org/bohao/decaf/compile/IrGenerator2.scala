@@ -65,6 +65,7 @@ object IrGenerator2 {
                 case VarNameNode(_, name) =>
                     namedValues = (name, alloc(name)) :: namedValues
                 case ArrayNameNode(_, name, size) =>
+                    namedValues = (name, allocArray(name, size.value.get)) :: namedValues
             }
         })
 
@@ -86,7 +87,15 @@ object IrGenerator2 {
                             case "=" => builder.createStore(target(value), src)
                         }
                     case VarArrayLocationExprNode(loc, variable, exp) =>
-
+                        val mem = variableAddress(variable.name)
+                        val index = codegen(exp)
+                        val value = codegen(expr)
+                        op.op match {
+                            case "=" =>
+                                val temp = builder.createGetElement(mem, target(index))
+                                builder.createStore(target(value),
+                                    target(temp).asInstanceOf[MemoryPointerOperand])
+                        }
                 }
             case MethodCallStmtNode(loc, call) =>
                 call match {
@@ -226,6 +235,10 @@ object IrGenerator2 {
                         val address = variableAddress(variable.name)
                         return builder.createLoad(address)
                     case VarArrayLocationExprNode(loc, variable, exp) =>
+                        val address = variableAddress(variable.name)
+                        val index = codegen(exp)
+                        val mem = builder.createGetElement(address, target(index))
+                        return builder.createLoad(target(mem).asInstanceOf[MemoryPointerOperand])
                 }
             case MethodCallExprNode(loc, call) =>
                 call match {
@@ -330,6 +343,13 @@ object IrGenerator2 {
         quad.dest
     }
 
+    private def allocArray(id: String, size: Int): MemoryPointerOperand = {
+        val quad = AllocaArray(MemoryPointerOperand(id), IntOperand(size))
+        currentFunction.addAlloca(quad)
+        namedValues = (id, quad.dest) :: namedValues
+        quad.dest
+    }
+
     private def variableAddress(id: String): MemoryPointerOperand = {
         namedValues.find(p => p._1 == id).get._2
     }
@@ -352,6 +372,7 @@ object IrGenerator2 {
             case T1(dest) => dest
 //            case Ret(value) =>
             case Call(retValue, func, args) => retValue
+            case GetElement(dest, mem, index) => dest
             case _ => throw new Error("unsupported open quad return " + quad)
         }
     }

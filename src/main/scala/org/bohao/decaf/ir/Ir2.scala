@@ -69,7 +69,7 @@ class Ir2(var functions: List[IFunction]) {
             case Ret0 => return s"Ret"
             case Call(retValue, func, args) =>
                 val argString = args.foldLeft("")((msg, x) => s"$msg [${s(x)}] ")
-                return s"${s(retValue)} = call @${func.name}($argString)"
+                return s"${s(retValue)} = call @$func($argString)"
             case Assign(dest, value) =>
                 return s"${s(dest)} = ${s(value)}"
             case Alloca(mem) =>

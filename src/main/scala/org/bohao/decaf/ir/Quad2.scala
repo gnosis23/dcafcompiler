@@ -48,7 +48,7 @@ case class Ret(value: Operand) extends Quad2
 
 object Ret0 extends Quad2
 
-case class Call(retValue: Lhs, func: IFunction, args: List[Operand]) extends Quad2
+case class Call(retValue: Lhs, func: String, args: List[Operand]) extends Quad2
 
 case class T1(value: Operand) extends Quad2
 

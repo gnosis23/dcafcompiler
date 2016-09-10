@@ -81,7 +81,7 @@ class IrBuilder {
         insertBlock.addInst(Ret0)
     }
 
-    def createCall(func: IFunction, args: List[Operand]): Quad2 = {
+    def createCall(func: String, args: List[Operand]): Quad2 = {
         insertBlock.addInst(Call(TempVarOperand(), func, args))
     }
 

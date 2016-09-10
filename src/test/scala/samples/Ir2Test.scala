@@ -101,5 +101,12 @@ class Ir2Test extends FunSpec {
 
             ir.dump()
         }
+
+        it("ir-callout") {
+            val path = getClass.getClassLoader.getResource("ir2-callout.dcaf").toURI.getPath
+            val ir = Compiler.asm2(path)
+
+            ir.dump()
+        }
     }
 }

@@ -83,6 +83,7 @@ object IrGenerator2 {
                     case VarLocationExprNode(loc, variable) =>
                         val src = variableAddress(variable.name)
                         val value = codegen(expr)
+                        // TODO: += -=
                         op.op match {
                             case "=" => builder.createStore(target(value), src)
                         }
@@ -90,6 +91,7 @@ object IrGenerator2 {
                         val mem = variableAddress(variable.name)
                         val index = codegen(exp)
                         val value = codegen(expr)
+                        // TODO: += -=
                         op.op match {
                             case "=" =>
                                 val temp = builder.createGetElement(mem, target(index))
@@ -101,8 +103,15 @@ object IrGenerator2 {
                 call match {
                     case ExpArgsMethodCallNode(_, name, arguments) =>
                         val argsOperand = arguments.map(x => target(codegen(x))).toList
-                        builder.createCall(currentFunction, argsOperand)
+                        builder.createCall(name.id.name, argsOperand)
                     case CalloutArgsMethodCallNode(_, name, arguments) =>
+                        val argsOperand = arguments.map {
+                            case ExprArgNode(_, exp) =>
+                                target(codegen(exp))
+                            case StringArgNode(_, str) =>
+                                StrOperand(str.str)
+                        }.toList
+                        builder.createCall(name.id.name, argsOperand)
                 }
             case IfStmtNode(_, cond, body, elseBody) =>
                 if (elseBody != null) {
@@ -245,9 +254,15 @@ object IrGenerator2 {
                 call match {
                     case ExpArgsMethodCallNode(_, name, arguments) =>
                         val argsOperand = arguments.map(x => target(codegen(x))).toList
-                        return builder.createCall(currentFunction, argsOperand)
+                        return builder.createCall(name.id.name, argsOperand)
                     case CalloutArgsMethodCallNode(_, name, arguments) =>
-                        // TODO: callout
+                        val argsOperand = arguments.map {
+                            case ExprArgNode(_, exp) =>
+                                target(codegen(exp))
+                            case StringArgNode(_, str) =>
+                                StrOperand(str.str)
+                        }.toList
+                        return builder.createCall(name.id.name, argsOperand)
                 }
             case LiteralExprNode(_, v) =>
                 v match {

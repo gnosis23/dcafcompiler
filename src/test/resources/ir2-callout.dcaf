@@ -1,0 +1,11 @@
+callout printf;
+
+int foo(int a, int b) {
+    printf("a = %d\n", a);
+    return b;
+}
+
+int main() {
+    int x, y, z;
+    return 1;
+}

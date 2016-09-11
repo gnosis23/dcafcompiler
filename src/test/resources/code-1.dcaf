@@ -1,0 +1,17 @@
+callout get_int;
+callout printf;
+
+int foo(int x) {
+    return x + 3;
+}
+
+void main() {
+    int y;
+
+    y = foo(get_int());
+    if (y == 15) {
+        printf("Indeed! \'tis 15!\n");
+    } else {
+        printf("What! %d\n", y);
+    }
+}

@@ -4,9 +4,9 @@ import java.util
 
 import org.bohao.decaf.ast._
 import org.bohao.decaf.symbol.{ISymbol, Env}
-import org.bohao.decaf.types._
-import scala.collection.JavaConversions._
 
+import scala.collection.JavaConversions._
+import org.bohao.decaf.types._
 
 /**
   * Created by bohao on 2016/8/27.
@@ -49,7 +49,7 @@ object SemanticChecker {
     }
 
     def checkCallout(scope: Env, node: CalloutDeclNode): Unit = {
-        val symbol = new ISymbol(node.name, CalloutType)
+        val symbol = new ISymbol(node.name, CalloutType())
         val result = scope.addSymbol(symbol)
         if (!result)
             log(s"error C0001 ${node.loc}: callout ${node.name} already defined, " +
@@ -494,6 +494,8 @@ object SemanticChecker {
                                 return None
                             }
                             return Some(fd.retType)
+                        case fd: CalloutType =>
+                            return Some(IntType)
                         case _ =>
                             log(s"error C0001 ${methodCallNode.loc}: ${name.id.name} is not a function")
                             return None

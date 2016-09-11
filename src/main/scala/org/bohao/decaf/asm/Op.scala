@@ -1,0 +1,21 @@
+package org.bohao.decaf.asm
+
+import org.bohao.decaf.asm.RegisterType.RegisterType
+
+/**
+  * Created by bohao on 2016/9/11.
+  */
+abstract class Op
+
+// Immediately value
+case class Imm(v : Int) extends Op
+
+// relative memory address
+case class RelativeMem(reg : RegisterType, offset : Int = 0) extends Op {
+}
+
+case class Register(reg : RegisterType) extends Op
+
+case class Func(name : String) extends Op
+
+case class Label(name : String) extends Op

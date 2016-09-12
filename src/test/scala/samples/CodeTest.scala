@@ -12,8 +12,14 @@ class CodeTest extends FunSpec {
     describe("ir") {
         it("if") {
             val path = getClass.getClassLoader.getResource("code-1.dcaf").toURI.getPath
-            val ir = Compiler.asm2(path)
+            val ret = Compiler.code(path)
+            val ir = ret._1
+            val code = ret._2
+
             ir.dump()
+
+            code.funcCodes.foreach(code => code.inst.foreach(println))
+
             assert(ir != null)
         }
     }

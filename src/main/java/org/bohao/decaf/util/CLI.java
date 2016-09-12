@@ -55,7 +55,7 @@ public class CLI {
      * ASSEMBLY: produce assembly from the input.
      */
     public enum Action {
-        DEFAULT, SCAN, PARSE, INTER, ASSEMBLY
+        DEFAULT, SCAN, PARSE, INTER, CODE, ASSEMBLY
     }
 
 
@@ -198,6 +198,7 @@ public class CLI {
             else if (targetStr.equals("parse")) target = Action.PARSE;
             else if (targetStr.equals("inter")) target = Action.INTER;
             else if (targetStr.equals("assembly")) target = Action.ASSEMBLY;
+            else if (targetStr.equals("code")) target = Action.CODE;
             else if (targetStr.equals("about")) {
                 printUsage("Test run successful!");
                 System.exit(0);

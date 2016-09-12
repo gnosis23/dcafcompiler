@@ -3,6 +3,7 @@ package org.bohao.decaf.compile
 import java.io._
 
 import org.antlr.v4.runtime._
+import org.bohao.decaf.asm.Code
 import org.bohao.decaf.ast.ProgramNode
 import org.bohao.decaf.ir.{Ir2, Ir, BasicBlock}
 import org.bohao.decaf.parser.{UnderlineListener, ParserParser, ParserLexer}
@@ -43,6 +44,10 @@ object Compiler {
             System.exit(0)
         } else if (CLI.target == CLI.Action.ASSEMBLY) {
             if (asm(CLI.infile) == null) {
+                System.exit(1)
+            }
+        } else if (CLI.target == CLI.Action.CODE) {
+            if (code(CLI.infile) == null) {
                 System.exit(1)
             }
         }
@@ -171,5 +176,14 @@ object Compiler {
         }
 
         IrGenerator2.build(ast)
+    }
+
+    def code(fileName: String): (Ir2, Code) = {
+        val ir = asm2(fileName)
+        if (ir == null) {
+            return null
+        }
+
+        (ir, AsmGenerator.gen(ir))
     }
 }

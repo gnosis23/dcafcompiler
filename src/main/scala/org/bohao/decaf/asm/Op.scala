@@ -18,4 +18,4 @@ case class Register(reg : RegisterType) extends Op
 
 case class Func(name : String) extends Op
 
-case class Label(name : String) extends Op
+case class Label(var name : String = "") extends Op

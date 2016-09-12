@@ -18,9 +18,10 @@ class CodeTest extends FunSpec {
 
             ir.dump()
 
-            code.funcCodes.foreach(code => code.inst.foreach(println))
+//            code.funcCodes.foreach(code => code.inst.foreach(println))
 
-            assert(ir != null)
+            AsmDumper.dump(code)
+            assert(code != null)
         }
     }
 

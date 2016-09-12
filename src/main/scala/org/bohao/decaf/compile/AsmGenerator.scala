@@ -63,16 +63,30 @@ object AsmGenerator {
             case Store(mem, startVal) =>
                 val src = mapper.findAddress(startVal)
                 val dest = mapper.findAddress(mem)
-                val t = Register(r10)
-                funcCode.add(Mov(src, t))
-                funcCode.add(Mov(t, dest))
+                (src, dest) match {
+                    case (a : Register, _) =>
+                        funcCode.add(Mov(src, dest))
+                    case (_ , b : Register) =>
+                        funcCode.add(Mov(src, dest))
+                    case _ =>
+                        val t = Register(r10)
+                        funcCode.add(Mov(src, t))
+                        funcCode.add(Mov(t, dest))
+                }
 
             case Load(dest, mem) =>
                 val srcAddr = mapper.findAddress(mem)
                 val destAddr = mapper.findAddress(dest)
-                val t = Register(r10)
-                funcCode.add(Mov(srcAddr, t))
-                funcCode.add(Mov(t, destAddr))
+                (srcAddr, destAddr) match {
+                    case (a : Register, _) =>
+                        funcCode.add(Mov(srcAddr, destAddr))
+                    case (_, b : Register) =>
+                        funcCode.add(Mov(srcAddr, destAddr))
+                    case _ =>
+                        val t = Register(r10)
+                        funcCode.add(Mov(srcAddr, t))
+                        funcCode.add(Mov(t, destAddr))
+                }
 
             case GetElement(dest, mem, index) =>
 

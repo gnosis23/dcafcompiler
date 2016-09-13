@@ -63,9 +63,9 @@ object IrGenerator2 {
             // all cast to int
             field.names.foreach {
                 case VarNameNode(_, name) =>
-                    namedValues = (name, alloc(name)) :: namedValues
+                    alloc(name)
                 case ArrayNameNode(_, name, size) =>
-                    namedValues = (name, allocArray(name, size.value.get)) :: namedValues
+                    allocArray(name, size.value.get)
             }
         })
 
@@ -447,7 +447,11 @@ object IrGenerator2 {
     }
 
     private def variableAddress(id: String): MemoryPointerOperand = {
-        namedValues.find(p => p._1 == id).get._2
+        val ret = namedValues.find(p => p._1 == id)
+        ret match {
+            case None => throw new Exception(s"bug : find $namedValues $id")
+            case Some((_, mem)) => mem
+        }
     }
 
     private def target(quad: Quad2): Operand = {

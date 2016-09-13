@@ -95,8 +95,10 @@ object AsmGenerator {
                         funcCode.add(Mov(t, destAddr))
                 }
 
-            case GetElement(dest, mem, index) =>
-                throw new Error("hehe")
+            case e @ GetElement(dest, mem, index) =>
+                val indexAddr = mapper.findAddress(index)
+                funcCode.add(Mov(indexAddr, Register(rax)))
+                mapper.addGetElement(e)
 
             case IAdd(dest, src1, src2) =>
                 val t = Register(r10)

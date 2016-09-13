@@ -86,8 +86,7 @@ class AddressMapper() {
 
     def addGetElement(x : GetElement): Unit = {
         val addr = mapper.get(x.mem).get.asInstanceOf[RelativeMem]
-        mapper = mapper + (x.dest -> RelativeMem(rbp, addr.offset +
-            8 * x.index.asInstanceOf[IntOperand].value))
+        mapper = mapper + (x.dest -> ArrayRelativeMem(rbp, addr.offset, Register(rax)))
     }
 
     def addTemp(x : TempVarOperand): Op = {

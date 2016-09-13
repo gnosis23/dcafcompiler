@@ -62,6 +62,7 @@ object AsmDumper {
             case Imm(v) => s"$$$v"
             case ImmStr(v) => s"$$$v"
             case RelativeMem(reg, offset) => s"$offset(%$reg)"
+            case ArrayRelativeMem(reg, offset, Register(r)) => s"$offset(%$reg, %$r, 8)"
             case Register(reg) => "%" + reg.toString
             case Func(name) => name
             case Label(name) => name

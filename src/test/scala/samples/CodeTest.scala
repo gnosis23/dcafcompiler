@@ -44,6 +44,15 @@ class CodeTest extends FunSpec {
             AsmDumper.dump(code)
             assert(code != null)
         }
+
+        it("array-len") {
+            val path = getClass.getClassLoader.getResource("array-len.dcaf").toURI.getPath
+            val ret = Compiler.code(path)
+            val code = ret._2
+
+            AsmDumper.dump(code)
+            assert(code != null)
+        }
     }
 
     describe("code") {

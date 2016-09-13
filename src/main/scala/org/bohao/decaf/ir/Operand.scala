@@ -65,3 +65,5 @@ object MemoryPointerOperand {
         MemoryPointerOperand(name, id)
     }
 }
+
+case class ArrayLenOperand(mem: MemoryPointerOperand) extends Operand

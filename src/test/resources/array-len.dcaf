@@ -1,0 +1,7 @@
+callout printf;
+
+int main() {
+    int a[10];
+    printf("len = %d\n", @a);
+    return 0;
+}

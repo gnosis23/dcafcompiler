@@ -108,5 +108,12 @@ class Ir2Test extends FunSpec {
 
             ir.dump()
         }
+
+        it("ir-array-len") {
+            val path = getClass.getClassLoader.getResource("array-len.dcaf").toURI.getPath
+            val ir = Compiler.asm2(path)
+
+            ir.dump()
+        }
     }
 }

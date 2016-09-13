@@ -90,12 +90,14 @@ class Ir2(var functions: List[IFunction]) {
     private def s(op: Operand): String = {
         op match {
             case IntOperand(value) => value.toString
-            case StrOperand(value) => s"'$value'"
+            case StrOperand(value) => "'%s'".format(value.replaceAll("\n", "\\\\n"))
             case BasicBlockOperand(block) => s"#${block.name}"
             case TempVarOperand(id) => s"%t$id"
             case ParamOperand(name) => "%" + name
             case VarOperand(v) => "%" + v
             case MemoryPointerOperand(name, id) => s"mem[$name,$id]"
+            case ArrayLenOperand(MemoryPointerOperand(name, id)) =>
+                s"@mem[$name,$id]"
             case _ => op.toString
         }
     }

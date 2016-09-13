@@ -28,6 +28,7 @@ class AddressMapper() {
     var stackSize = 0
 
     var mapper = Map[Operand, Op]()
+    var arraySize = Map[Operand, Int]()
 
     def findAddress(op : Operand) : Op = {
         val ret = mapper.get(op)
@@ -37,6 +38,7 @@ class AddressMapper() {
                     addTemp(t)
                 case IntOperand(v) => Imm(v)
                 case StrOperand(str) => ImmStr(str)
+                case ArrayLenOperand(mem) => Imm(arraySize.get(mem).get)
                 case _ => throw new Error("symbol error " + op)
             }
             case Some(x) => x
@@ -80,8 +82,10 @@ class AddressMapper() {
     }
 
     def addAllocaArray(x : AllocaArray): Unit = {
-        stackSize += 8 * x.size.asInstanceOf[IntOperand].value
+        val size = x.size.asInstanceOf[IntOperand].value
+        stackSize += 8 * size
         mapper = mapper + (x.dest -> RelativeMem(rbp, -stackSize))
+        arraySize = arraySize + (x.dest -> size)
     }
 
     def addGetElement(x : GetElement): Unit = {

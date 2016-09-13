@@ -274,7 +274,8 @@ object IrGenerator2 {
                         return T1(IntOperand(if(value) 1 else 0))
                 }
             case IdExprNode(loc, id) =>
-                // TODO: @len
+                val addr = variableAddress(id.name)
+                return T1(ArrayLenOperand(addr))
             case BinExprNode(_, op0, lhs, rhs) =>
                 op0 match {
                     case ArithOpNode(_, op) =>

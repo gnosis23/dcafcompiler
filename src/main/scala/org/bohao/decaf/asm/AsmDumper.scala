@@ -60,6 +60,7 @@ object AsmDumper {
     def s(op : Op) : String = {
         op match {
             case Imm(v) => s"$$$v"
+            case ImmStr(v) => s"$$$v"
             case RelativeMem(reg, offset) => s"$offset(%$reg)"
             case Register(reg) => "%" + reg.toString
             case Func(name) => name

@@ -165,14 +165,14 @@ object AsmGenerator {
 
     def checkStrLiteral(funcCode: FuncCode, addr: Op) = {
         addr match {
-            case lbl @ Label(name) =>
-                if (asm.stringLiterals.contains(name)) {
-                    lbl.name = asm.stringLiterals.get(name).get
+            case lbl @ ImmStr(str) =>
+                if (asm.stringLiterals.contains(str)) {
+                    lbl.v = asm.stringLiterals.get(str).get
                 } else {
                     val size = asm.stringLiterals.size
-                    lbl.name = ".str" + size
+                    lbl.v = ".str" + size
                     asm.stringLiterals = asm.stringLiterals +
-                        (s".str${size+1}" -> name)
+                        (s".str$size" -> str)
                 }
             case _ =>
         }

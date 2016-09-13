@@ -36,7 +36,7 @@ class AddressMapper() {
                 case t @ TempVarOperand(id) =>
                     addTemp(t)
                 case IntOperand(v) => Imm(v)
-                case StrOperand(str) => Label(str)
+                case StrOperand(str) => ImmStr(str)
                 case _ => throw new Error("symbol error " + op)
             }
             case Some(x) => x

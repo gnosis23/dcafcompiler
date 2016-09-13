@@ -10,8 +10,8 @@ object AsmDumper {
         })
 
         code.stringLiterals.foreach(node => {
-            println(node._1 + ":")
-            println("  .string \"%s\"".format(node._2.replaceAll("\n", "\\\\n")))
+            println(node._2 + ":")
+            println("  .string \"%s\"".format(node._1.replaceAll("\n", "\\\\n")))
         })
     }
 
@@ -30,11 +30,11 @@ object AsmDumper {
         inst match {
             case Mov(src, dest) => return s"  mov  ${s(src)}, ${s(dest)}"
             case Cmove(src, dest) => return s"  cmove  ${s(src)}, ${s(dest)}"
-            case Cmovne(src, dest) =>
-            case Cmovg(src, dest) =>
-            case Cmovl(src, dest) =>
-            case Cmovge(src, dest) =>
-            case Cmovle(src, dest) =>
+            case Cmovne(src, dest) =>return s"  cmovne  ${s(src)}, ${s(dest)}"
+            case Cmovg(src, dest) => return s"  cmovg  ${s(src)}, ${s(dest)}"
+            case Cmovl(src, dest) => return s"  cmovl  ${s(src)}, ${s(dest)}"
+            case Cmovge(src, dest) =>return s"  cmovge  ${s(src)}, ${s(dest)}"
+            case Cmovle(src, dest) =>return s"  cmovle  ${s(src)}, ${s(dest)}"
             case Enter(x) =>
             case Leave =>
             case Push(src) =>
@@ -45,8 +45,8 @@ object AsmDumper {
             case Je(label) => return s"  je  .${s(label)}"
             case Jne(label) => return s"  jne  .${s(label)}"
             case Add(src, dest) => return s"  add  ${s(src)}, ${s(dest)}"
-            case Sub(src, dest) =>
-            case Imul(src, dest) =>
+            case Sub(src, dest) => return s"  sub  ${s(src)}, ${s(dest)}"
+            case Imul(src, dest) => return s"  imul  ${s(src)}, ${s(dest)}"
             case Idiv(src, dest) =>
             case Shr(src, dest) =>
             case Shl(src, dest) =>

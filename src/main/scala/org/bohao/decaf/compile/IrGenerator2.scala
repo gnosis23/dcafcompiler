@@ -169,7 +169,7 @@ object IrGenerator2 {
                 builder.setInsertPoint(condBlock)
                 val quad0 = codegen(endExpr)
                 val a1 = builder.createLoad(indexAddress)
-                val t0 = builder.createITestle(target(a1), target(quad0))
+                val t0 = builder.createITestl(target(a1), target(quad0))
                 builder.createCondBr(target(t0), BasicBlockOperand(thenBlock),
                     BasicBlockOperand(endBlock))
 
@@ -283,6 +283,8 @@ object IrGenerator2 {
                         op match {
                             case "+" =>
                                 return builder.createIAdd(target(lquad), target(rquad))
+                            case "-" =>
+                                return builder.createISub(target(lquad), target(rquad))
                             case "*" =>
                                 return builder.createIMul(target(lquad), target(rquad))
                             case _ => throw new Error(s"unimplemented op $op")

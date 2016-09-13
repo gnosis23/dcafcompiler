@@ -49,7 +49,14 @@ object AsmGenerator {
     }
 
     def gen(funcCode: FuncCode, mapper: AddressMapper, block: BasicBlock): Unit = {
-        block.insts.foreach {
+        block.insts.foreach(i => genInst(funcCode, mapper, block, i))
+
+    }
+
+    def genInst(funcCode: FuncCode, mapper: AddressMapper, block: BasicBlock,
+                quad: Quad2): Unit =
+    {
+        quad match  {
             case Br(b) =>
                 funcCode.add(Jmp(Label(b.block.name)))
 
@@ -89,6 +96,7 @@ object AsmGenerator {
                 }
 
             case GetElement(dest, mem, index) =>
+                throw new Error("hehe")
 
             case IAdd(dest, src1, src2) =>
                 val t = Register(r10)
@@ -100,7 +108,23 @@ object AsmGenerator {
                 funcCode.add(Mov(t, destAddr))
 
             case ISub(dest, src1, src2) =>
+                val t = Register(r10)
+                val src1Addr = mapper.findAddress(src1)
+                funcCode.add(Mov(src1Addr, t))
+                val src2Addr = mapper.findAddress(src2)
+                funcCode.add(Sub(src2Addr, t))
+                val destAddr = mapper.findAddress(dest)
+                funcCode.add(Mov(t, destAddr))
+
             case IMul(dest, src1, src2) =>
+                val t = Register(r10)
+                val src1Addr = mapper.findAddress(src1)
+                funcCode.add(Mov(src1Addr, t))
+                val src2Addr = mapper.findAddress(src2)
+                funcCode.add(Imul(src2Addr, t))
+                val destAddr = mapper.findAddress(dest)
+                funcCode.add(Mov(t, destAddr))
+
             case ITesteq(dest, src1, src2) =>
                 val src1Addr = mapper.findAddress(src1)
                 val src2Addr = mapper.findAddress(src2)
@@ -114,11 +138,77 @@ object AsmGenerator {
                 funcCode.add(Mov(Register(r11), destAddr))
 
             case ITestneq(dest, src1, src2) =>
+                val src1Addr = mapper.findAddress(src1)
+                val src2Addr = mapper.findAddress(src2)
+                funcCode.add(Mov(src1Addr, Register(r10)))
+                funcCode.add(Mov(src2Addr, Register(r11)))
+                // Set flags corresponding to whether dest is less than,
+                // equal to, or greater than src
+                funcCode.add(Cmp(Register(r11), Register(r10)))
+                funcCode.add(Mov(Imm(0), Register(r11)))
+                funcCode.add(Mov(Imm(1), Register(r10)))
+                funcCode.add(Cmovne(Register(r10), Register(r11)))
+                val destAddr = mapper.findAddress(dest)
+                funcCode.add(Mov(Register(r11), destAddr))
+
             case ITestl(dest, src1, src2) =>
+                val src1Addr = mapper.findAddress(src1)
+                val src2Addr = mapper.findAddress(src2)
+                funcCode.add(Mov(src1Addr, Register(r10)))
+                funcCode.add(Mov(src2Addr, Register(r11)))
+                // Set flags corresponding to whether dest is less than,
+                // equal to, or greater than src
+                funcCode.add(Cmp(Register(r11), Register(r10)))
+                funcCode.add(Mov(Imm(0), Register(r11)))
+                funcCode.add(Mov(Imm(1), Register(r10)))
+                funcCode.add(Cmovl(Register(r10), Register(r11)))
+                val destAddr = mapper.findAddress(dest)
+                funcCode.add(Mov(Register(r11), destAddr))
+
             case ITestle(dest, src1, src2) =>
+                val src1Addr = mapper.findAddress(src1)
+                val src2Addr = mapper.findAddress(src2)
+                funcCode.add(Mov(src1Addr, Register(r10)))
+                funcCode.add(Mov(src2Addr, Register(r11)))
+                // Set flags corresponding to whether dest is less than,
+                // equal to, or greater than src
+                funcCode.add(Cmp(Register(r11), Register(r10)))
+                funcCode.add(Mov(Imm(0), Register(r11)))
+                funcCode.add(Mov(Imm(1), Register(r10)))
+                funcCode.add(Cmovle(Register(r10), Register(r11)))
+                val destAddr = mapper.findAddress(dest)
+                funcCode.add(Mov(Register(r11), destAddr))
+
             case ITestg(dest, src1, src2) =>
+                val src1Addr = mapper.findAddress(src1)
+                val src2Addr = mapper.findAddress(src2)
+                funcCode.add(Mov(src1Addr, Register(r10)))
+                funcCode.add(Mov(src2Addr, Register(r11)))
+                // Set flags corresponding to whether dest is less than,
+                // equal to, or greater than src
+                funcCode.add(Cmp(Register(r11), Register(r10)))
+                funcCode.add(Mov(Imm(0), Register(r11)))
+                funcCode.add(Mov(Imm(1), Register(r10)))
+                funcCode.add(Cmovg(Register(r10), Register(r11)))
+                val destAddr = mapper.findAddress(dest)
+                funcCode.add(Mov(Register(r11), destAddr))
+
             case ITestge(dest, src1, src2) =>
+                val src1Addr = mapper.findAddress(src1)
+                val src2Addr = mapper.findAddress(src2)
+                funcCode.add(Mov(src1Addr, Register(r10)))
+                funcCode.add(Mov(src2Addr, Register(r11)))
+                // Set flags corresponding to whether dest is less than,
+                // equal to, or greater than src
+                funcCode.add(Cmp(Register(r11), Register(r10)))
+                funcCode.add(Mov(Imm(0), Register(r11)))
+                funcCode.add(Mov(Imm(1), Register(r10)))
+                funcCode.add(Cmovge(Register(r10), Register(r11)))
+                val destAddr = mapper.findAddress(dest)
+                funcCode.add(Mov(Register(r11), destAddr))
+
             case ICmp(dest, src1) =>
+                throw new Error("hehe")
 
             case Ret(value) =>
                 val srcAddr = mapper.findAddress(value)
@@ -156,23 +246,23 @@ object AsmGenerator {
                     }
                 }
 
-            case T1(value) =>
-            case Assign(dest, value) =>
-            case Neg(dest, value) =>
-            case Rev(dest, value) =>
+            case T1(value) => throw new Error("hehe")
+            case Assign(dest, value) => throw new Error("hehe")
+            case Neg(dest, value) => throw new Error("hehe")
+            case Rev(dest, value) => throw new Error("hehe")
         }
     }
 
     def checkStrLiteral(funcCode: FuncCode, addr: Op) = {
         addr match {
             case lbl @ ImmStr(str) =>
-                if (asm.stringLiterals.contains(str)) {
+                if (asm.stringLiterals.get(str).isDefined) {
                     lbl.v = asm.stringLiterals.get(str).get
                 } else {
                     val size = asm.stringLiterals.size
                     lbl.v = ".str" + size
                     asm.stringLiterals = asm.stringLiterals +
-                        (s".str$size" -> str)
+                        (str -> s".str$size")
                 }
             case _ =>
         }

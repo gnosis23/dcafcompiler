@@ -1,6 +1,6 @@
 package org.bohao.decaf.compile
 
-import org.bohao.decaf.asm.RegisterType.{r11, rax, r10}
+import org.bohao.decaf.asm.RegisterType._
 import org.bohao.decaf.asm._
 import org.bohao.decaf.ir.Call
 import org.bohao.decaf.ir.Ret
@@ -96,7 +96,13 @@ object AsmGenerator {
                 }
 
             case e @ GetElement(dest, mem, index) =>
+                // runtime check: array index
+                val sizeAddr = mapper.findAddress(ArrayLenOperand(mem))
                 val indexAddr = mapper.findAddress(index)
+                funcCode.add(Mov(indexAddr, Register(rdi)))
+                funcCode.add(Mov(sizeAddr, Register(rsi)))
+                funcCode.add(org.bohao.decaf.asm.Call(Func("__checkArrayIndex")))
+
                 funcCode.add(Mov(indexAddr, Register(rax)))
                 mapper.addGetElement(e)
 

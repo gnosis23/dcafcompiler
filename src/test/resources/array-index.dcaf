@@ -1,0 +1,10 @@
+callout printf;
+
+int main() {
+    int a[10];
+    printf("len = %d\n", @a);
+    for (i = 0, 20) {
+        a[i] = 1;
+    }
+    return 0;
+}

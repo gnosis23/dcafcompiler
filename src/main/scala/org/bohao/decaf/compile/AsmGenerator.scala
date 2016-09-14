@@ -288,7 +288,16 @@ object AsmGenerator {
                 val destAddr = mapper.findAddress(dest)
                 funcCode.add(Mov(Register(r11), destAddr))
 
-            case Rev(dest, value) => throw new Error("hehe")
+            case Rev(dest, value) =>
+                val srcAddr = mapper.findAddress(value)
+                funcCode.add(Mov(srcAddr, Register(r10)))
+                funcCode.add(Mov(Imm(0),  Register(r11)))
+                funcCode.add(Cmp(Register(r10), Register(r11)))
+                funcCode.add(Mov(Imm(0), Register(r11)))
+                funcCode.add(Mov(Imm(1), Register(r10)))
+                funcCode.add(Cmove(Register(r10), Register(r11)))
+                val destAddr = mapper.findAddress(dest)
+                funcCode.add(Mov(Register(r11), destAddr))
         }
     }
 

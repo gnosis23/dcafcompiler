@@ -32,5 +32,9 @@ int main() {
     if (find(3)) {
         printf("find 3.\n");
     }
+
+    if (!(5 > 6)) {
+        printf("5 > 6 !!\n");
+    }
     return 0;
 }

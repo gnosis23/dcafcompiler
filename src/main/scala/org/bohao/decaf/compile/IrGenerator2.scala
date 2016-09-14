@@ -291,7 +291,10 @@ object IrGenerator2 {
                                 return builder.createISub(target(lquad), target(rquad))
                             case "*" =>
                                 return builder.createIMul(target(lquad), target(rquad))
-                            case _ => throw new Error(s"unimplemented op $op")
+                            case "/" =>
+                                return builder.createIDiv(target(lquad), target(rquad))
+                            case "%" =>
+                                return builder.createIMod(target(lquad), target(rquad))
                         }
                     case RelOpNode(_, op) =>
                         val lquad = codegen(lhs)

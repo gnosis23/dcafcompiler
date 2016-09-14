@@ -11,7 +11,7 @@ boolean find(int t) {
     x[3] = 7;
     x[4] = 11;
     for (i = 0, 5) {
-        if ((x[i] == t) && (t != 2)) {
+        if (x[i] == t && t != 2) {
             result =  true;
             break;
         }

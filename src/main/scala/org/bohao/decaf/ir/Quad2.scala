@@ -29,6 +29,10 @@ case class ISub(dest: Lhs, src1: Operand, src2: Operand) extends Quad2
 
 case class IMul(dest: Lhs, src1: Operand, src2: Operand) extends Quad2
 
+case class IDiv(dest: Lhs, src1: Operand, src2: Operand) extends Quad2
+
+case class IMod(dest: Lhs, src1: Operand, src2: Operand) extends Quad2
+
 case class ITesteq(dest: Lhs, src1: Operand, src2: Operand) extends Quad2
 
 case class ITestneq(dest: Lhs, src1: Operand, src2: Operand) extends Quad2

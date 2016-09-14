@@ -45,6 +45,14 @@ class IrBuilder {
         insertBlock.addInst(IMul(TempVarOperand(), value1, value2))
     }
 
+    def createIDiv(value1: Operand, value2: Operand): Quad2 = {
+        insertBlock.addInst(IDiv(TempVarOperand(), value1, value2))
+    }
+
+    def createIMod(value1: Operand, value2: Operand): Quad2 = {
+        insertBlock.addInst(IMod(TempVarOperand(), value1, value2))
+    }
+
     def createITesteq(value1: Operand, value2: Operand): Quad2 = {
         insertBlock.addInst(ITesteq(TempVarOperand(), value1, value2))
     }

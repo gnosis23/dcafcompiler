@@ -217,10 +217,6 @@ expr returns [ExpNode v]
       {
         $v = new IdExprNode(loc($start1), new VarNode(loc($IDENTIFIER),$IDENTIFIER.text));
       }
-    | e1=expr op=bin_op e2=expr
-      {
-        $v = new BinExprNode($e1.v.location(), $op.v, $e1.v, $e2.v);
-      }
     | start2='-' e=expr
       {
         $v = new UnaryExprNode(loc($start2), "-", $e.v);
@@ -228,6 +224,30 @@ expr returns [ExpNode v]
     | start3='!' e=expr
       {
         $v = new UnaryExprNode(loc($start3), "!", $e.v);
+      }
+    | e1=expr a1=arith_op1 e2=expr
+      {
+        $v = new BinExprNode($e1.v.location(), new ArithOpNode(loc($a1.start), $a1.text), $e1.v, $e2.v);
+      }
+    | e1=expr a0=arith_op2 e2=expr
+      {
+        $v = new BinExprNode($e1.v.location(), new ArithOpNode(loc($a0.start), $a0.text), $e1.v, $e2.v);
+      }
+    | e1=expr a2=rel_op e2=expr
+      {
+        $v = new BinExprNode($e1.v.location(), new RelOpNode(loc($a2.start), $a2.text), $e1.v, $e2.v);
+      }
+    | e1=expr a3=eq_op e2=expr
+      {
+        $v = new BinExprNode($e1.v.location(), new EqOpNode(loc($a3.start), $a3.text), $e1.v, $e2.v);
+      }
+    | e1=expr a4=cond_op1 e2=expr
+      {
+        $v = new BinExprNode($e1.v.location(), new CondOpNode(loc($a4.start), $a4.text), $e1.v, $e2.v);
+      }
+    | e1=expr a5=cond_op2 e2=expr
+      {
+        $v = new BinExprNode($e1.v.location(), new CondOpNode(loc($a5.start), $a5.text), $e1.v, $e2.v);
       }
     | '(' e=expr ')' {$v = $e.v;}
     | c=expr '?' b1=expr ':' b2=expr
@@ -241,20 +261,18 @@ callout_arg returns [CalloutArgNode v]
     | s=STRINGLITERAL {$v = new StringArgNode(loc($s), new StringLiteralNode(loc($s), toString($s.text)));}
     ;
 
-bin_op returns [OpNode v]
-    : a1=arith_op   {$v = new ArithOpNode(loc($a1.start), $a1.text);}
-    | a2=rel_op     {$v = new RelOpNode(loc($a2.start), $a2.text);}
-    | a3=eq_op      {$v = new EqOpNode(loc($a3.start), $a3.text);}
-    | a4=cond_op    {$v = new CondOpNode(loc($a4.start), $a4.text);}
-    ;
 
-arith_op: '+' | '-' | '*' | '/' | '%' ;
+arith_op1: '*' | '/' | '%' ;
+
+arith_op2: '+' | '-' ;
 
 rel_op: '<' | '>' | '<=' | '>=';
 
 eq_op: '==' | '!=' ;
 
-cond_op: '&&' | '||';
+cond_op1: '&&' ;
+
+cond_op2: '||' ;
 
 literal returns [LiteralNode v]
     : s=INTLITERAL    { $v = new IntLiteralNode(loc($s), $s.text); }

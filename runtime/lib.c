@@ -1,14 +1,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-int get_int() {
+long get_int() {
     int c;
     printf("input int > ");
-    scanf("%d", &c);
+    scanf("%ld", &c);
     return c;
 }
 
-void __checkArrayIndex(int index, int arraySize) {
+void __checkArrayIndex(long index, long arraySize) {
     if (index < 0 || index >= arraySize) {
         fprintf(stderr, "array index out of range.\n");
         exit(-1);

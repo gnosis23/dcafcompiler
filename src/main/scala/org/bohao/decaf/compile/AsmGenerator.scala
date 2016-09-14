@@ -255,7 +255,12 @@ object AsmGenerator {
                 }
 
             case T1(value) => throw new Error("hehe")
-            case Assign(dest, value) => throw new Error("hehe")
+            case Assign(dest, value) =>
+                val srcAddr = mapper.findAddress(value)
+                funcCode.add(Mov(srcAddr, Register(r10)))
+                val destAddr = mapper.findAddress(dest)
+                funcCode.add(Mov(Register(r10), destAddr))
+
             case Neg(dest, value) => throw new Error("hehe")
             case Rev(dest, value) => throw new Error("hehe")
         }

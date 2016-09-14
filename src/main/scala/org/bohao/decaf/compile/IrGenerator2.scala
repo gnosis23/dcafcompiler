@@ -115,9 +115,9 @@ object IrGenerator2 {
                 }
             case IfStmtNode(_, cond, body, elseBody) =>
                 if (elseBody != null) {
-                    val thenBlock = BasicBlock.create("then")
-                    val elseBlock = BasicBlock.create("else")
-                    val mergeBlock = BasicBlock.create("ifcont")
+                    val thenBlock = BasicBlock.create("if0then")
+                    val elseBlock = BasicBlock.create("if0else")
+                    val mergeBlock = BasicBlock.create("if0end")
 
                     val condValue = codegen(cond)
                     builder.createCondBr(target(condValue), BasicBlockOperand(thenBlock),
@@ -136,13 +136,14 @@ object IrGenerator2 {
                     currentFunction.addBlock(mergeBlock)
                     builder.setInsertPoint(mergeBlock)
                 } else {
-                    val thenBlock = BasicBlock.create("then", currentFunction)
-                    val mergeBlock = BasicBlock.create("ifcont")
+                    val thenBlock = BasicBlock.create("if1then")
+                    val mergeBlock = BasicBlock.create("if1end")
 
                     val condValue = codegen(cond)
                     builder.createCondBr(target(condValue), BasicBlockOperand(thenBlock),
                         BasicBlockOperand(mergeBlock))
 
+                    currentFunction.addBlock(thenBlock)
                     builder.setInsertPoint(thenBlock)
                     codegen(body)
                     builder.createBr(BasicBlockOperand(mergeBlock))
@@ -151,9 +152,9 @@ object IrGenerator2 {
                     builder.setInsertPoint(mergeBlock)
                 }
             case ForStmtNode(loc, id, initExpr, endExpr, step, body) =>
-                val condBlock = BasicBlock.create("cond", currentFunction)
-                val thenBlock = BasicBlock.create("loop")
-                val endBlock = BasicBlock.create("endloop")
+                val condBlock = BasicBlock.create("forcond")
+                val thenBlock = BasicBlock.create("forbody")
+                val endBlock = BasicBlock.create("forend")
 
                 val oldNamedValues = namedValues
                 pushStack(thenBlock, endBlock)
@@ -166,6 +167,7 @@ object IrGenerator2 {
                 builder.createStore(target(initValue), indexAddress)
                 builder.createBr(BasicBlockOperand(condBlock))
 
+                currentFunction.addBlock(condBlock)
                 builder.setInsertPoint(condBlock)
                 val quad0 = codegen(endExpr)
                 val a1 = builder.createLoad(indexAddress)
@@ -194,15 +196,16 @@ object IrGenerator2 {
                 namedValues = oldNamedValues
 
             case WhileStmtNode(loc, cond, body) =>
-                val condBlock = BasicBlock.create("cond", currentFunction)
-                val thenBlock = BasicBlock.create("while-body")
-                val endBlock = BasicBlock.create("end-while")
+                val condBlock = BasicBlock.create("whilecond")
+                val thenBlock = BasicBlock.create("whilebody")
+                val endBlock = BasicBlock.create("whileend")
 
                 pushStack(thenBlock, endBlock)
 
                 // init
                 builder.createBr(BasicBlockOperand(condBlock))
 
+                currentFunction.addBlock(condBlock)
                 builder.setInsertPoint(condBlock)
                 val quad0 = codegen(cond)
                 builder.createCondBr(target(quad0), BasicBlockOperand(thenBlock),
@@ -316,8 +319,8 @@ object IrGenerator2 {
                         // shortcut , don't eval first
                         op match {
                             case "&&" =>
-                                val thenBlock = BasicBlock.create("next-and")
-                                val endBlock = BasicBlock.create("end-and")
+                                val thenBlock = BasicBlock.create("Andnext")
+                                val endBlock = BasicBlock.create("Andend")
 
                                 val temp = TempVarOperand()
                                 val lquad = codegen(lhs)
@@ -336,8 +339,8 @@ object IrGenerator2 {
                                 builder.setInsertPoint(endBlock)
                                 return T1(temp)
                             case "||" =>
-                                val thenBlock = BasicBlock.create("next-or")
-                                val endBlock = BasicBlock.create("end-or")
+                                val thenBlock = BasicBlock.create("Ornext")
+                                val endBlock = BasicBlock.create("Orend")
 
                                 val temp = TempVarOperand()
                                 val lquad = codegen(lhs)
@@ -369,9 +372,9 @@ object IrGenerator2 {
             case CondExprNode(_, cond, branch1, branch2) =>
                 val value = codegen(cond)
                 val temp = TempVarOperand()
-                val b1 = BasicBlock.create("ta")
-                val b2 = BasicBlock.create("tb")
-                val endblock = BasicBlock.create("tend")
+                val b1 = BasicBlock.create("ternarya")
+                val b2 = BasicBlock.create("ternaryb")
+                val endblock = BasicBlock.create("ternaryend")
 
                 builder.createAssign(temp, IntOperand(0))
                 builder.createCondBr(target(value), BasicBlockOperand(b1),

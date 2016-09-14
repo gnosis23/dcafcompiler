@@ -1,0 +1,36 @@
+callout get_int;
+callout printf;
+
+boolean find(int t) {
+    int x[5];
+    boolean result;
+    result = false;
+    x[0] = 2;
+    x[1] = 3;
+    x[2] = 5;
+    x[3] = 7;
+    x[4] = 11;
+    for (i = 0, 5) {
+        if ((x[i] == t) && (t != 2)) {
+            result =  true;
+            break;
+        }
+        printf("not found %d\n", t);
+    }
+    return result;
+}
+
+int main() {
+    int a, b;
+    b = get_int();
+    a = b >= 10 ? 10 : (b >= 5 ? 5 : 0);
+    printf("input >= %d\n", a);
+
+    if (find(2)) {
+        printf("find 2.\n");
+    }
+    if (find(3)) {
+        printf("find 3.\n");
+    }
+    return 0;
+}

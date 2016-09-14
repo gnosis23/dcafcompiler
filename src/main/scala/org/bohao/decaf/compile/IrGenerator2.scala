@@ -469,6 +469,8 @@ object IrGenerator2 {
             case IAdd(dest, src1, src2) => dest
             case ISub(dest, src1, src2) => dest
             case IMul(dest, src1, src2) => dest
+            case IDiv(dest, _, _) => dest
+            case IMod(dest, _, _) => dest
             case ITesteq(dest, src1, src2) => dest
             case ITestneq(dest, src1, src2) => dest
             case ITestg(dest, src1, src2) => dest

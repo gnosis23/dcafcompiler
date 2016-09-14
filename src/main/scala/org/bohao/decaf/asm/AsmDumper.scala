@@ -47,7 +47,7 @@ object AsmDumper {
             case Add(src, dest) => return s"  add  ${s(src)}, ${s(dest)}"
             case Sub(src, dest) => return s"  sub  ${s(src)}, ${s(dest)}"
             case Imul(src, dest) => return s"  imul  ${s(src)}, ${s(dest)}"
-            case Idiv(src, dest) =>
+            case Idiv(devisor) => return s"  idiv  ${s(devisor)}"
             case Shr(src, dest) =>
             case Shl(src, dest) =>
             case Ror(src, dest) =>

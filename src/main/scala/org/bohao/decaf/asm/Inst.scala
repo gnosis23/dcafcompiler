@@ -48,7 +48,7 @@ case class Sub(src : Op, dest : Op) extends Inst
 
 case class Imul(src : Op, dest : Op) extends Inst
 
-case class Idiv(src : Op, dest : Op) extends Inst
+case class Idiv(divisor : Op) extends Inst
 
 case class Shr(src : Op, dest : Op) extends Inst
 

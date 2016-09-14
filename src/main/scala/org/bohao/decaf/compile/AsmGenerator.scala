@@ -133,6 +133,28 @@ object AsmGenerator {
                 val destAddr = mapper.findAddress(dest)
                 funcCode.add(Mov(t, destAddr))
 
+            case IDiv(dest, src1, src2) =>
+                val src1Addr = mapper.findAddress(src1)
+                funcCode.add(Mov(Imm(0), Register(rdx)))
+                funcCode.add(Mov(src1Addr, Register(rax)))
+                val divisorAddr = mapper.findAddress(src2)
+                funcCode.add(Mov(divisorAddr, Register(r10)))
+                funcCode.add(Idiv(Register(r10)))
+
+                val destAddr = mapper.findAddress(dest)
+                funcCode.add(Mov(Register(rax), destAddr))
+
+            case IMod(dest, src1, src2) =>
+                val src1Addr = mapper.findAddress(src1)
+                funcCode.add(Mov(Imm(0), Register(rdx)))
+                funcCode.add(Mov(src1Addr, Register(rax)))
+                val divisorAddr = mapper.findAddress(src2)
+                funcCode.add(Mov(divisorAddr, Register(r10)))
+                funcCode.add(Idiv(Register(r10)))
+
+                val destAddr = mapper.findAddress(dest)
+                funcCode.add(Mov(Register(rdx), destAddr))
+
             case ITesteq(dest, src1, src2) =>
                 val src1Addr = mapper.findAddress(src1)
                 val src2Addr = mapper.findAddress(src2)

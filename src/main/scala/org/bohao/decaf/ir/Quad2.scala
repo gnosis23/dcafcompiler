@@ -46,8 +46,6 @@ case class ITestg(dest: Lhs, src1: Operand, src2: Operand) extends Quad2
 case class ITestge(dest: Lhs, src1: Operand, src2: Operand) extends Quad2
 
 
-case class ICmp(dest: Lhs, src1: Operand) extends Quad2
-
 case class Ret(value: Operand) extends Quad2
 
 object Ret0 extends Quad2

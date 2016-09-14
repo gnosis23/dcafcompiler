@@ -77,9 +77,6 @@ class IrBuilder {
         insertBlock.addInst(ITestge(TempVarOperand(), value1, value2))
     }
 
-    def createICmp(value: Operand): Quad2 = {
-        insertBlock.addInst(ICmp(TempVarOperand(), value))
-    }
 
     def createRet(value: Operand): Quad2 = {
         insertBlock.addInst(Ret(value))

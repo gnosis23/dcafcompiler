@@ -67,8 +67,6 @@ class Ir2(var functions: List[IFunction]) {
                 return s"${s(dest)} = itestl ${s(src1)}, ${s(src2)}"
             case ITestle(dest, src1, src2) =>
                 return s"${s(dest)} = itestle ${s(src1)}, ${s(src2)}"
-            case ICmp(dest, src1) =>
-                return s"${s(dest)} = icmp ${s(src1)}"
             case Ret(value) => return s"Ret ${s(value)}"
             case Ret0 => return s"Ret"
             case Call(retValue, func, args) =>

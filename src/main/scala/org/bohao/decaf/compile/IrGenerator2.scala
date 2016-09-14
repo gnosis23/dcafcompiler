@@ -477,7 +477,6 @@ object IrGenerator2 {
             case ITestge(dest, src1, src2) => dest
             case ITestl(dest, src1, src2) => dest
             case ITestle(dest, src1, src2) => dest
-            case ICmp(dest, src1) => dest
             case T1(dest) => dest
 //            case Ret(value) =>
             case Call(retValue, func, args) => retValue

@@ -13,5 +13,7 @@ int main() {
 
     printf("10 / 3 = %d\n", a % 3);
 
+    printf("-10 = %d\n", -(2 * b + 4));
+
     return 0;
 }
